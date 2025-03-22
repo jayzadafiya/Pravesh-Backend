@@ -48,13 +48,13 @@ export const updateOne = async <T extends Document>(
 
 export const upsertOne = async <T extends Document>(
   model: Model<T>,
-  id: mongoose.Types.ObjectId,
+  findObject: any,
   updateData: any
 ): Promise<T | null> => {
   return await model.findOneAndUpdate(
-    { _id: id, isActive: true },
+    findObject,
     { $set: updateData },
-    { new: true }
+    { new: true, upsert: true, returnDocument: "after" }
   );
 };
 
