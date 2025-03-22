@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { IUser } from "../interfaces/user.interface";
 import { upsertOne } from "../utils/helper";
 import UserModel from "../models/User.model";
-import { BadRequestException } from "../utils/exceptions";
+import { BadRequestException, ForbiddenException } from "../utils/exceptions";
 
 class authController {
   private signToken = (id: mongoose.Types.ObjectId) => {
@@ -35,13 +35,15 @@ class authController {
     try {
       const data = req.body.phone;
 
-      const user = await upsertOne(
-        UserModel,
-        { phone: data, active: true },
-        { phone: data }
-      );
+      const user = await upsertOne(UserModel, { phone: data }, { phone: data });
       if (!user) {
         throw new BadRequestException("User not found");
+      }
+
+      if (!user.active) {
+        throw new ForbiddenException(
+          "User do not have access, Please contact admin"
+        );
       }
       this.createSendToken(user!, 200, res);
     } catch (error: any) {
