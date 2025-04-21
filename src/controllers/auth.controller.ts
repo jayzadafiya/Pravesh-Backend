@@ -29,12 +29,12 @@ class authController {
       delete user.active;
 
       // WhatsappService.sendOTPMessage(OTP, phone);
-      res.status(200).json({
+      res.status(200).send({
         status: "success",
         user,
       });
     } catch (error: any) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
 }
