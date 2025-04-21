@@ -11,7 +11,8 @@ const UserSchema: Schema = new Schema(
       index: true,
     },
     role: { type: String, enum: ["Admin", "User"], default: "User" },
-    active: { type: Boolean, default: false, select: false },
+    active: { type: Boolean, default: true, select: false },
+    OTP: { type: String, select: false },
   },
   {
     timestamps: true,

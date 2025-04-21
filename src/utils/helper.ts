@@ -49,13 +49,16 @@ export const updateOne = async <T extends Document>(
 export const upsertOne = async <T extends Document>(
   model: Model<T>,
   findObject: any,
-  updateData: any
+  updateData: any,
+  selectedFields?: string
 ): Promise<T | null> => {
-  return await model.findOneAndUpdate(
-    findObject,
-    { $set: updateData },
-    { new: true, upsert: true, returnDocument: "after" }
-  );
+  return await model
+    .findOneAndUpdate(
+      findObject,
+      { $set: updateData },
+      { new: true, upsert: true, returnDocument: "after" }
+    )
+    .select<T>(selectedFields ? `${selectedFields}` : "");
 };
 
 export const deleteOne = async <T extends Document>(
