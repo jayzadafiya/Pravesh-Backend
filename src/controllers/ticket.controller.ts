@@ -4,16 +4,16 @@ import { UserService } from "../services/user.service";
 class ticketController {
   constructor() {}
 
-  async createTicket(req: any, res: any) {
+  createTicket = async (req: any, res: any) => {
     try {
       const ticket = await TicketService.createTicket(req.body);
       res.status(201).json(ticket);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
-  }
+  };
 
-  async getTicketsByUserId(req: any, res: any) {
+  getTicketsByUserId = async (req: any, res: any) => {
     try {
       const userId = req.params.userId;
       const user = await UserService.getUserByPhone(userId);
@@ -22,6 +22,27 @@ class ticketController {
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
-  }
+  };
+
+  updateStatus = async (req: any, res: any) => {
+    try {
+      const { ticketIds, status } = req.body;
+
+      if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
+        return res.status(400).json({
+          message: "Ticket IDs must be an array and cannot be empty.",
+        });
+      }
+
+      const updatedTickets = await TicketService.updateStatusForMultipleTickets(
+        ticketIds,
+        status
+      );
+
+      res.status(200).json(updatedTickets);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 }
 export const TicketController = new ticketController();

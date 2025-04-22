@@ -11,11 +11,12 @@ class qrService {
       },
       scale: 3,
       width: 300,
+      margin: 5,
     });
 
     const base64Image = buffer.toString("base64");
     const dataURI = `data:image/png;base64,${base64Image}`;
-    const fileName = `${userId}_${moment().valueOf()}.png`;
+    const fileName = `${userId}`;
 
     const result = await CloudinaryService.uploadImage(dataURI, fileName);
     console.log("Uploaded QR URL:", result.secure_url);

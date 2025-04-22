@@ -5,5 +5,6 @@ const ticketRouter = express.Router();
 
 ticketRouter.post("/create-ticket", TicketController.createTicket);
 ticketRouter.get("/:userId", TicketController.getTicketsByUserId);
+ticketRouter.patch("/update-status", TicketController.updateStatus);
 
 export default ticketRouter;
