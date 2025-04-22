@@ -1,4 +1,5 @@
 import { TicketService } from "../services/ticket.service";
+import { UserService } from "../services/User.service";
 
 class ticketController {
   constructor() {}
@@ -15,7 +16,8 @@ class ticketController {
   async getTicketsByUserId(req: any, res: any) {
     try {
       const userId = req.params.userId;
-      const tickets = await TicketService.getTicketsByUserId(userId);
+      const user = await UserService.getUserByPhone(userId);
+      const tickets = await TicketService.getTicketsByUserId(user as any);
       res.status(200).json(tickets);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
