@@ -1,5 +1,5 @@
 import { TicketService } from "../services/ticket.service";
-import { UserService } from "../services/User.service";
+import { UserService } from "../services/user.service";
 
 class ticketController {
   constructor() {}
