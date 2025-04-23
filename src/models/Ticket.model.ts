@@ -19,7 +19,11 @@ const TicketSchema: Schema = new Schema(
       ref: "User",
       required: true,
     },
-    sharedWith: { type: String },
+    sharedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   {
     timestamps: true,

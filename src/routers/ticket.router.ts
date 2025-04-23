@@ -7,5 +7,6 @@ ticketRouter.post("/create-ticket", TicketController.createTicket);
 ticketRouter.get("/:userId", TicketController.getTicketsByUserId);
 ticketRouter.get("/all/:userId", TicketController.getAllTicketsByUserId);
 ticketRouter.patch("/update-status", TicketController.updateStatus);
+ticketRouter.post("/share-tickets", TicketController.shareTickets);
 
 export default ticketRouter;
