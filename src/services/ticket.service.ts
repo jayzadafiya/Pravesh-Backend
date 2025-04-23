@@ -6,11 +6,11 @@ class ticketService {
     return await createOne(TicketModel, ticket);
   }
 
-  getTicketsByUserId = async (userId: string) => {
+  getTicketsByUserId = async (userId: string, otherFilter?: any) => {
     try {
       const tickets = await TicketModel.find({
         userId,
-        status: { $ne: "Used" },
+        ...otherFilter,
       });
       return tickets;
     } catch (error) {

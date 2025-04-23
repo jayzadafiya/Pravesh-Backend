@@ -23,6 +23,16 @@ class ticketController {
       res.status(500).json({ message: error.message });
     }
   };
+  getAllTicketsByUserId = async (req: any, res: any) => {
+    try {
+      const userId = req.params.userId;
+      const user = await UserService.getUserByPhone(userId);
+      const tickets = await TicketService.getTicketsByUserId(user as any);
+      res.status(200).json(tickets);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
   updateStatus = async (req: any, res: any) => {
     try {
