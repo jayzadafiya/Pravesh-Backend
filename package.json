@@ -23,11 +23,14 @@
     "moment": "^2.30.1",
     "mongodb": "^6.15.0",
     "mongoose": "^8.12.1",
-    "qrcode": "^1.5.4"
+    "multer": "^1.4.5-lts.2",
+    "qrcode": "^1.5.4",
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.13.10",
     "@types/qrcode": "^1.5.5",
     "nodemon": "^3.1.9",

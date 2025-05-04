@@ -1,10 +1,12 @@
 import cloudinary from "../config/cloudinary.config";
 
 class cloudinaryService {
-  uploadImage = async (dataUri: string, fileName: string) => {
+  uploadImage = async (data: Buffer, fileName: string, folderName?: string) => {
     try {
-      const result = await cloudinary.uploader.upload(dataUri, {
-        folder: "QRCodes",
+      const base64Image = data.toString("base64");
+      const dataURI = `data:image/png;base64,${base64Image}`;
+      const result = await cloudinary.uploader.upload(dataURI, {
+        folder: folderName || "QRCodes",
         public_id: fileName,
         overwrite: true,
       });

@@ -14,11 +14,13 @@ class qrService {
       margin: 5,
     });
 
-    const base64Image = buffer.toString("base64");
-    const dataURI = `data:image/png;base64,${base64Image}`;
     const fileName = `${userId}`;
 
-    const result = await CloudinaryService.uploadImage(dataURI, fileName);
+    const result = await CloudinaryService.uploadImage(
+      buffer,
+      fileName,
+      "QRCodes"
+    );
     console.log("Uploaded QR URL:", result.secure_url);
 
     return result.secure_url;

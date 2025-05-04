@@ -35,17 +35,12 @@ export const updateOne = async <T extends Document>(
   id: mongoose.Types.ObjectId,
   updateData: Partial<T>
 ): Promise<T | null> => {
-  const keys: string[] = Object.keys(updateData);
-
-  const updatedDocument = await model.findByIdAndUpdate(
+  return model.findByIdAndUpdate(
     id,
     { $set: updateData },
     { new: true, runValidators: true }
   );
-
-  return updatedDocument;
 };
-
 export const upsertOne = async <T extends Document>(
   model: Model<T>,
   findObject: any,
