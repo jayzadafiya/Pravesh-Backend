@@ -28,11 +28,9 @@ class authController {
 
       delete user.active;
 
+      //TODO: Add whatsapp otp
       // WhatsappService.sendOTPMessage(OTP, phone);
-      res.status(200).send({
-        status: "success",
-        user,
-      });
+      await AuthService.createSendToken(user, 200, res);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
