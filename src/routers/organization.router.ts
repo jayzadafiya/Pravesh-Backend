@@ -32,4 +32,14 @@ organizationRouter.patch(
   OrganizationController.updateEvent
 );
 
+organizationRouter.get(
+  "/get-event-banners",
+  OrganizationController.getEventBanner
+);
+
+organizationRouter.get(
+  "/get-event-posters",
+  OrganizationController.getEventPosters
+);
+
 export default organizationRouter;

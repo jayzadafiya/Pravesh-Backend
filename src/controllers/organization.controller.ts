@@ -85,6 +85,24 @@ class organizationController {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
+
+  getEventBanner = async (req: Request, res: Response) => {
+    try {
+      const events = await OrganizationService.getEventBanner();
+      res.status(200).send(events);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getEventPosters = async (req: Request, res: Response) => {
+    try {
+      const events = await OrganizationService.getEventPosters();
+      res.status(200).send(events);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
 }
 
 export const OrganizationController = new organizationController();

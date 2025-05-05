@@ -19,6 +19,16 @@ class organizationService {
       updateData
     );
   };
+
+  getEventBanner = async () => {
+    return await EventModel.find({}).select("bannerImage slug").lean().limit(5);
+  };
+  getEventPosters = async () => {
+    return await EventModel.find({})
+      .select("posterImage slug name ")
+      .lean()
+      .limit(5);
+  };
 }
 
 export const OrganizationService = new organizationService();
