@@ -16,6 +16,19 @@ class cloudinaryService {
       throw error;
     }
   };
+
+  uploadImageIfExists = async (
+    file: Express.Multer.File | undefined,
+    folder: string
+  ) => {
+    if (!file) return undefined;
+    const uploaded = await this.uploadImage(
+      file.buffer,
+      file.originalname,
+      folder
+    );
+    return uploaded?.url;
+  };
 }
 
 export const CloudinaryService = new cloudinaryService();

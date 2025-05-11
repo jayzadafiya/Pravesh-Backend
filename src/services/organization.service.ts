@@ -2,9 +2,29 @@ import mongoose from "mongoose";
 import { IOrganization } from "../interfaces/organization.interface";
 import EventModel from "../models/Event.model";
 import OrganizationModel from "../models/Organization.model";
-import { createOne, updateOne } from "../utils/helper";
+import { createOne, getOne, updateOne } from "../utils/helper";
+import { IEvent } from "../interfaces/event.interface";
 
 class organizationService {
+  getEventBanner = async () => {
+    return await EventModel.find({}).select("bannerImage slug").lean().limit(5);
+  };
+
+  getEventPosters = async () => {
+    return await EventModel.find({})
+      .select("posterImage slug name ")
+      .lean()
+      .limit(5);
+  };
+
+  getEvent = async (slug: string): Promise<IEvent | null> => {
+    return await EventModel.findOne({ slug });
+  };
+
+  getEventById = async (eventId: string): Promise<IEvent | null> => {
+    return await getOne(EventModel, new mongoose.Types.ObjectId(eventId));
+  };
+
   createOrganization = async (data: IOrganization) => {
     return await createOne(OrganizationModel, data);
   };
@@ -20,14 +40,32 @@ class organizationService {
     );
   };
 
-  getEventBanner = async () => {
-    return await EventModel.find({}).select("bannerImage slug").lean().limit(5);
-  };
-  getEventPosters = async () => {
-    return await EventModel.find({})
-      .select("posterImage slug name ")
-      .lean()
-      .limit(5);
+  upsertEntity = async (
+    eventId: string,
+    entity: { name: string; profileImage: string; order: number },
+    type: "artists" | "sponsors"
+  ) => {
+    const event = await this.getEventById(eventId);
+    if (!event) throw { statusCode: 404, message: "Event not found" };
+
+    if (!event[type]) {
+      event[type] = [];
+    }
+
+    const index = event[type].findIndex(
+      (e: { name: string }) =>
+        e.name.toLowerCase() === entity.name.toLowerCase()
+    );
+
+    if (index !== -1) {
+      event[type][index].profileImage = entity.profileImage;
+      event[type][index].order = entity.order;
+    } else {
+      event[type].push(entity);
+    }
+
+    await event.save();
+    return event[type];
   };
 }
 

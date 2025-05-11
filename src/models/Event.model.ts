@@ -37,6 +37,10 @@ const EventSchema: Schema = new Schema(
     bannerImage: {
       type: String,
     },
+    mainImage: {
+      type: String,
+      required: true,
+    },
     isPublished: {
       type: Boolean,
       default: false,
@@ -45,6 +49,23 @@ const EventSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    duration: {
+      type: String,
+    },
+    artists: [
+      {
+        name: { type: String, required: true },
+        profileImage: { type: String, required: true },
+        order: { type: Number, required: true },
+      },
+    ],
+    sponsors: [
+      {
+        name: { type: String, required: true },
+        profileImage: { type: String, required: true },
+        order: { type: Number, required: true },
+      },
+    ],
   },
   {
     timestamps: true,
