@@ -1,93 +1,86 @@
-import { TicketService } from "../services/ticket.service";
-import { UserService } from "../services/user.service";
+import { Request, Response } from "express";
+import { EventTicketService } from "../services/evetn-ticket.service";
+import { BadRequestException } from "../utils/exceptions";
+import mongoose from "mongoose";
 
 class ticketController {
-  constructor() {}
-
-  createTicket = async (req: any, res: any) => {
+  upsertEventTicket = async (req: Request, res: Response) => {
     try {
-      const ticket = await TicketService.createTicket(req.body);
-      res.status(201).json(ticket);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  };
+      const {
+        event,
+        isMultiPlace,
+        isDifferentPrice,
+        generalPrice,
+        generalQuantity,
+      } = req.body;
 
-  getTicketsByUserId = async (req: any, res: any) => {
-    try {
-      const userId = req.params.userId;
-      const user = await UserService.getUserByPhone(userId);
-      const tickets = await TicketService.getTicketsByUserId(user as any);
-      res.status(200).json(tickets);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-  getAllTicketsByUserId = async (req: any, res: any) => {
-    try {
-      const userId = req.params.userId;
-      const user = await UserService.getUserByPhone(userId);
-      const tickets = await TicketService.getAllTicketsByUserId(user as any);
-      res.status(200).json(tickets);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-
-  updateStatus = async (req: any, res: any) => {
-    try {
-      const { ticketIds, status } = req.body;
-
-      if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
-        return res.status(400).json({
-          message: "Ticket IDs must be an array and cannot be empty.",
-        });
+      if (!event) {
+        throw new BadRequestException("Event is required");
+      } else if (!mongoose.Types.ObjectId.isValid(event)) {
+        throw new BadRequestException("Invalid Event ID format");
       }
 
-      const updatedTickets = await TicketService.updateStatusForMultipleTickets(
-        ticketIds,
-        status
+      const updatedTicket = await EventTicketService.createOrUpdateTicket(
+        event,
+        isMultiPlace,
+        isDifferentPrice,
+        generalPrice,
+        generalQuantity
       );
 
-      res.status(200).json(updatedTickets);
+      res.status(200).json({ data: updatedTicket });
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
 
-  shareTickets = async (req: any, res: any) => {
-    const { ticketIds, userId, sharePhoneNumber } = req.body;
-
+  upsertVenueTicket = async (req: Request, res: Response) => {
     try {
-      if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
-        return res.status(400).json({
-          message: "Ticket IDs must be an array and cannot be empty.",
-        });
-      }
+      const { eventTicket, venue, address, date, ticketTypes } = req.body;
 
-      let shareUser: any = await UserService.getUserByPhone(sharePhoneNumber);
+      const updatedTicket = await EventTicketService.createOrUpdateVenueTicket(
+        eventTicket,
+        venue,
+        address,
+        date,
+        ticketTypes
+      );
 
-      if (!shareUser.length) {
-        shareUser = await UserService.cerateUser(sharePhoneNumber);
-      } else {
-        shareUser = shareUser[0];
-      }
-
-      console.log(shareUser);
-
-      const promise: any = [];
-
-      ticketIds.forEach((id: string) => {
-        promise.push(
-          TicketService.updateTicketShareBy(id, userId, shareUser.id)
+      if (!(eventTicket && date && venue)) {
+        throw new BadRequestException(
+          "Event ticket, date and venue are required"
         );
-      });
+      } else if (!mongoose.Types.ObjectId.isValid(eventTicket)) {
+        throw new BadRequestException("Invalid Event Ticket ID format");
+      }
 
-      await Promise.all(promise);
-
-      res.status(200).json();
+      res.status(200).json({ updatedTicket });
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getEventTicketDetails = async (req: Request, res: Response) => {
+    try {
+      const { eventId } = req.params;
+
+      if (!eventId) {
+        throw new BadRequestException("Event ID is required");
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        throw new BadRequestException("Invalid Event ID format");
+      }
+
+      const { eventTicket, venueTickets } =
+        await EventTicketService.getEventTicketDetails(eventId);
+
+      res.status(200).json({
+        eventTicket,
+        venueTickets,
+      });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
 }

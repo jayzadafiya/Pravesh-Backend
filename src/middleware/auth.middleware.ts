@@ -26,6 +26,9 @@ const protect = async (
     const decoded: any = await new Promise((resolve, reject) => {
       jwt.verify(token, process.env.JWT_SECRET!, (err: any, decoded: any) => {
         if (err) {
+          if (err.name === "TokenExpiredError") {
+            return reject(new Error("Access token has expired"));
+          }
           return reject(err);
         }
         resolve(decoded);
