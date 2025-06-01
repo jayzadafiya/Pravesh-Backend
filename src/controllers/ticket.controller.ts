@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { EventTicketService } from "../services/evetn-ticket.service";
+import { EventTicketService } from "../services/event-ticket.service";
 import { BadRequestException } from "../utils/exceptions";
 import mongoose from "mongoose";
 

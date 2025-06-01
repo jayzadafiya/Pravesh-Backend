@@ -26,7 +26,7 @@ export const getAll = async <T>(
 export const createOne = async <T>(
   model: Model<T>,
   bodyData: any
-): Promise<T | null> => {
+): Promise<T> => {
   return model.create(bodyData);
 };
 
@@ -34,19 +34,24 @@ export const updateOne = async <T extends Document>(
   model: Model<T>,
   id: mongoose.Types.ObjectId,
   updateData: Partial<T>
-): Promise<T | null> => {
-  return model.findByIdAndUpdate(
+): Promise<T> => {
+  const updatedDocument = await model.findByIdAndUpdate(
     id,
     { $set: updateData },
     { new: true, runValidators: true }
   );
+  if (!updatedDocument) {
+    throw new BadRequestException("Failed! Document not found for update.");
+  }
+  return updatedDocument;
 };
+
 export const upsertOne = async <T extends Document>(
   model: Model<T>,
   findObject: any,
   updateData: any,
   selectedFields?: string
-): Promise<T | null> => {
+): Promise<T> => {
   return await model
     .findOneAndUpdate(
       findObject,

@@ -8,7 +8,8 @@ ticketRouter.post("/event-ticket", protect, TicketController.upsertEventTicket);
 ticketRouter.post("/venue-ticket", TicketController.upsertVenueTicket);
 ticketRouter.get(
   "/ticket-details/:eventId",
-  TicketController.getEventTicketDetails
+  protect,
+  TicketController.getEventTicketDetails as any
 );
 
 export default ticketRouter;

@@ -21,7 +21,7 @@ organizationRouter.get("/get-event/:slug", OrganizationController.getEvent);
 organizationRouter.post(
   "/",
   protect,
-  OrganizationController.createOrganization
+  OrganizationController.createOrganization as any
 );
 
 organizationRouter.post(
@@ -50,7 +50,7 @@ organizationRouter.patch(
 organizationRouter.post(
   "/",
   protect,
-  OrganizationController.createOrganization
+  OrganizationController.createOrganization as any
 );
 
 organizationRouter.post(

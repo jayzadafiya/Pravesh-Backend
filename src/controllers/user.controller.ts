@@ -1,4 +1,9 @@
+import mongoose from "mongoose";
+import { Response } from "express";
 import { BadRequestException } from "../utils/exceptions";
+import { AuthRequest } from "../interfaces/auth-request.interface";
+import { UserService } from "../services/user.service";
+import { IVenueCartItem } from "../interfaces/cart.interface";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -7,6 +12,127 @@ class userController {
         throw new BadRequestException("User not found");
       }
       return res.status(200).send(req.user);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getCartItems = async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const cartItem = await UserService.getCartItemsByUserId(userId);
+
+      res.status(200).send({ cartData: cartItem || [] });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getSelectedTickets = async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    const { venueId } = req.params;
+
+    try {
+      if (!userId) {
+        throw new BadRequestException("User ID is required");
+      }
+
+      if (!venueId || !mongoose.Types.ObjectId.isValid(venueId)) {
+        throw new BadRequestException("Invalid Venue ID format");
+      }
+
+      const selectedTickets = await UserService.getSelectedTicketsById(
+        new mongoose.Types.ObjectId(userId),
+        new mongoose.Types.ObjectId(venueId)
+      );
+
+      res.status(200).json(selectedTickets);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  updateCartItems = async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+      const { items } = req.body;
+
+      if (!items || typeof items !== "object" || Array.isArray(items)) {
+        return res.status(400).json({ message: "Invalid items format" });
+      }
+
+      const cart = await UserService.upsertCart(userId);
+      for (const [venueId, ticketsArray] of Object.entries(items)) {
+        if (!mongoose.Types.ObjectId.isValid(venueId)) continue;
+
+        const venueObjectId = new mongoose.Types.ObjectId(venueId);
+        const existingVenue = cart.items.find(
+          (item) => item.venueId.toString() === venueId
+        );
+
+        if (!existingVenue) {
+          // Add new venue only if at least one valid ticket
+          const newTickets: Record<string, number> = {};
+
+          for (const ticketObj of ticketsArray as Record<string, number>[]) {
+            const [ticketId, quantity] = Object.entries(ticketObj)[0];
+
+            if (
+              mongoose.Types.ObjectId.isValid(ticketId) &&
+              typeof quantity === "number" &&
+              quantity > 0
+            ) {
+              newTickets[ticketId] = quantity;
+            }
+          }
+
+          if (Object.keys(newTickets).length > 0) {
+            cart.items.push({
+              venueId: venueObjectId,
+              tickets: newTickets,
+            });
+          }
+
+          continue;
+        }
+
+        // Update existing venue tickets
+        for (const ticketObj of ticketsArray as Record<string, number>[]) {
+          const [ticketId, quantity] = Object.entries(ticketObj)[0];
+
+          if (!mongoose.Types.ObjectId.isValid(ticketId)) continue;
+
+          if (existingVenue.tickets instanceof Map) {
+            if (quantity <= 0) {
+              existingVenue.tickets.delete(ticketId);
+            } else {
+              existingVenue.tickets.set(ticketId, quantity);
+            }
+          } else {
+            if (quantity <= 0) {
+              delete existingVenue.tickets[ticketId];
+            } else {
+              existingVenue.tickets[ticketId] = quantity;
+            }
+          }
+        }
+
+        // If all tickets removed, remove the venue
+        if (Object.keys(existingVenue.tickets).length === 0) {
+          cart.items = cart.items.filter(
+            (item) => item.venueId.toString() !== venueId
+          );
+        }
+      }
+
+      await UserService.upsertCart(userId, cart.items);
+
+      res.status(201).send(cart.items);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }

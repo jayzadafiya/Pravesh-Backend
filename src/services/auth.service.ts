@@ -19,7 +19,7 @@ class authService {
   };
 
   createSendToken = async (user: IUser, statusCode: number, res: Response) => {
-    const token = this.signToken(user._id);
+    const token = this.signToken(user.id);
     res.status(statusCode).json({
       status: "success",
       token,

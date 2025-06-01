@@ -1,11 +1,14 @@
 import UserModel from "../models/User.model";
 import * as jwt from "jsonwebtoken";
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from "../utils/exceptions";
 import { AuthRequest } from "../interfaces/auth-request.interface";
-import { BadRequestException } from "../utils/exceptions";
 
 const protect = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -20,14 +23,16 @@ const protect = async (
     }
 
     if (!token) {
-      throw new BadRequestException("You are not logged in!!");
+      throw new UnauthorizedException("You are not logged in!!");
     }
 
     const decoded: any = await new Promise((resolve, reject) => {
       jwt.verify(token, process.env.JWT_SECRET!, (err: any, decoded: any) => {
         if (err) {
           if (err.name === "TokenExpiredError") {
-            return reject(new Error("Access token has expired"));
+            return reject(
+              new UnauthorizedException("Access token has expired")
+            );
           }
           return reject(err);
         }
@@ -43,7 +48,7 @@ const protect = async (
     }
 
     res.locals.user = freshUser;
-    req.user = freshUser;
+    (req as AuthRequest).user = freshUser;
 
     next();
   } catch (error: any) {

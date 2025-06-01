@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { IEventTicket } from "../interfaces/event-ticket.interface";
 import { IVenueTicket, ITicketType } from "../interfaces/venueTicket.interface";
 import TicketModel from "../models/Event-ticket.model";
