@@ -56,28 +56,34 @@ class userService {
       {
         $addFields: {
           "venue.ticketTypes": {
-            $map: {
-              input: "$venue.ticketTypes",
-              as: "tt",
-              in: {
-                _id: "$$tt._id",
-                type: "$$tt.type",
-                price: "$$tt.price",
-                quantity: "$$tt.quantity",
-                count: {
-                  $ifNull: [
-                    {
-                      $toInt: {
-                        $getField: {
-                          field: { $toString: "$$tt._id" },
-                          input: "$items.tickets",
+            $filter: {
+              input: {
+                $map: {
+                  input: "$venue.ticketTypes",
+                  as: "tt",
+                  in: {
+                    _id: "$$tt._id",
+                    type: "$$tt.type",
+                    price: "$$tt.price",
+                    quantity: "$$tt.quantity",
+                    count: {
+                      $ifNull: [
+                        {
+                          $toInt: {
+                            $getField: {
+                              field: { $toString: "$$tt._id" },
+                              input: "$items.tickets",
+                            },
+                          },
                         },
-                      },
+                        0,
+                      ],
                     },
-                    0,
-                  ],
+                  },
                 },
               },
+              as: "ticket",
+              cond: { $gt: ["$$ticket.count", 0] },
             },
           },
         },
