@@ -1,17 +1,23 @@
 import mongoose from "mongoose";
 import UserModel from "../models/User.model";
 import CartModel from "../models/Cart.model";
-import { createOne, getOne, updateOne, upsertOne } from "../utils/helper";
+import {
+  createOne,
+  deleteOne,
+  getOne,
+  updateOne,
+  upsertOne,
+} from "../utils/helper";
 import { ICart, IVenueCartItem } from "../interfaces/cart.interface";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { BadRequestException } from "../utils/exceptions";
 
 class userService {
-  async getUserByPhone(phone: string) {
+  getUserByPhone = async (phone: string) => {
     return await UserModel.find({ phone: phone });
-  }
+  };
 
-  async getCartItemsByUserId(userId: mongoose.Types.ObjectId) {
+  getCartItemsByUserId = async (userId: mongoose.Types.ObjectId) => {
     userId = new mongoose.Types.ObjectId(userId);
     const cartItems = await CartModel.aggregate([
       { $match: { _id: userId } },
@@ -93,6 +99,7 @@ class userService {
         $project: {
           _id: "$venue._id",
           date: "$venue.date",
+          eventId: "$event._id",
           eventName: "$venue.eventName",
           ticketTypes: "$venue.ticketTypes",
         },
@@ -100,7 +107,7 @@ class userService {
     ]);
 
     return cartItems;
-  }
+  };
 
   getSelectedTicketsById = async (
     cartId: mongoose.Types.ObjectId,
@@ -144,10 +151,10 @@ class userService {
     return await createOne(UserModel, { phone });
   }
 
-  async upsertCart(
+  upsertCart = async (
     userId: mongoose.Types.ObjectId,
     items: IVenueCartItem[] = []
-  ): Promise<ICart> {
+  ) => {
     let cart = await getOne(CartModel, userId);
     if (!cart) {
       return await createOne(CartModel, {
@@ -164,6 +171,10 @@ class userService {
     }
 
     return cart;
-  }
+  };
+
+  removeCartItem = async (userId: mongoose.Types.ObjectId) => {
+    return await deleteOne(CartModel, userId);
+  };
 }
 export const UserService = new userService();

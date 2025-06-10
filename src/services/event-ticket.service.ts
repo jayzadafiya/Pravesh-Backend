@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 import { IEventTicket } from "../interfaces/event-ticket.interface";
-import { IVenueTicket, ITicketType } from "../interfaces/venueTicket.interface";
-import TicketModel from "../models/Event-ticket.model";
+import {
+  IVenueTicket,
+  ITicketType,
+  ICartEventTicket,
+} from "../interfaces/venue-ticket.interface";
+import EventTicketModel from "../models/Event-ticket.model";
 import VenueTicketModel from "../models/Venue-ticket.model";
 import { BadRequestException } from "../utils/exceptions";
 import { upsertOne } from "../utils/helper";
@@ -10,10 +14,9 @@ class eventTicketService {
   getEventTicketDetails = async (
     eventId: string
   ): Promise<{ eventTicket: IEventTicket; venueTickets: IVenueTicket[] }> => {
-    const eventTicket = await TicketModel.findOne({ event: eventId }).populate(
-      "event",
-      "name"
-    );
+    const eventTicket = await EventTicketModel.findOne({
+      event: eventId,
+    }).populate("event", "name");
     if (!eventTicket) {
       throw new BadRequestException("Event ticket not found");
     }
@@ -36,7 +39,7 @@ class eventTicketService {
     generalQuantity: number
   ): Promise<IEventTicket> => {
     const ticket = await upsertOne(
-      TicketModel,
+      EventTicketModel,
       { event },
       { isMultiPlace, isDifferentPrice, generalPrice, generalQuantity }
     );
@@ -64,6 +67,11 @@ class eventTicketService {
 
     return venueTicket;
   };
+
+  createOrUpdateUserBuyTicket = async (
+    userId: mongoose.Types.ObjectId,
+    selectedTickets: ICartEventTicket[]
+  ) => {};
 }
 
 export const EventTicketService = new eventTicketService();
