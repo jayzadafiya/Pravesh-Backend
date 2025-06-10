@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IVenueTicket } from "../interfaces/venueTicket.interface";
+import { IVenueTicket } from "../interfaces/venue-ticket.interface";
 
 const TicketTypeSchema = new Schema(
   {

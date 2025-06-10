@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cors from "cors";
-import connectDB from "./config/db.config";
 import router from "./routers/v1.router";
 import globalErrorHandler from "./middleware/error-handler.middleware";
+import connectDB from "./config/db.config";
 
 connectDB();
 
@@ -12,7 +12,11 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://praveshnavratri.netlify.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://praveshnavratri.netlify.app",
+      "https://mw1mqz88-5173.inc1.devtunnels.ms",
+    ],
     credentials: true,
   })
 );
@@ -45,7 +49,7 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (err: any) => {
   console.log("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.log(err.name, err.message);
+  console.log(err.name, err.response.data);
   server.close(() => {
     process.exit(1);
   });
