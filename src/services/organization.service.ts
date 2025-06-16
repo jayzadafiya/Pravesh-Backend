@@ -7,14 +7,16 @@ import { IEvent } from "../interfaces/event.interface";
 
 class organizationService {
   getEventBanner = async () => {
-    return await EventModel.find({}).select("bannerImage slug").lean().limit(5);
+    return await EventModel.find({})
+      .select("bannerImage name date location duration slug")
+      .lean()
+      .limit(5);
   };
 
   getEventPosters = async () => {
     return await EventModel.find({})
-      .select("posterImage slug name ")
-      .lean()
-      .limit(5);
+      .select("posterImage slug name description ")
+      .lean();
   };
 
   getEvent = async (slug: string): Promise<IEvent | null> => {
