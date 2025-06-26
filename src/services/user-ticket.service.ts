@@ -3,6 +3,52 @@ import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import UserTicketModel from "../models/User-ticket.model";
 
 class userTicketService {
+  getAssignTickets = async (userId: mongoose.Types.ObjectId) => {
+    const tickets: any = await UserTicketModel.find({
+      user: userId,
+    })
+      .populate({
+        path: "event",
+        select: "name date",
+      })
+      .populate({
+        path: "venue",
+        select: "venue ticketTypes",
+      })
+      .lean();
+
+    const cleanedTickets = tickets.map((ticket: any) => {
+      const venue = ticket.venue as any;
+      const ticketTypeDetails = venue?.ticketTypes?.find(
+        (t: any) => t._id.toString() === ticket.ticketType.toString()
+      );
+
+      return {
+        _id: ticket._id,
+        status: ticket.status,
+        quantity: ticket.quantity,
+        price: ticket.price,
+        createdAt: ticket.createdAt,
+        event: {
+          _id: ticket.event?._id,
+          name: ticket.event?.name,
+          date: ticket.event?.date,
+        },
+        venue: {
+          _id: venue?._id,
+          venue: venue?.venue,
+        },
+        ticketType: ticket.ticketType,
+        ticketTypeDetails: ticketTypeDetails && {
+          _id: ticketTypeDetails._id,
+          type: ticketTypeDetails.type,
+        },
+      };
+    });
+
+    return cleanedTickets;
+  };
+
   createTicket = async (
     userId: mongoose.Types.ObjectId,
     selectedTickets: ICartEventTicket[],

@@ -38,6 +38,16 @@ class userController {
     }
   };
 
+  getUserAssignTickets = async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+
+    const assignTickets = await UserTicketService.getAssignTickets(
+      new mongoose.Types.ObjectId(userId)
+    );
+
+    res.status(200).send(assignTickets);
+  };
+
   getSelectedTickets = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     const { venueId } = req.params;
