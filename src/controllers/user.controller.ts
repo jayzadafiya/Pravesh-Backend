@@ -4,6 +4,7 @@ import { BadRequestException } from "../utils/exceptions";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
 import { IVenueCartItem } from "../interfaces/cart.interface";
+import { CloudinaryService } from "../services/cloudinary.service";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -133,6 +134,47 @@ class userController {
       await UserService.upsertCart(userId, cart.items);
 
       res.status(201).send(cart.items);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  updateUserDetails = async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+      const userData = req.body;
+
+      if (!userId) {
+        throw new BadRequestException("User ID is required");
+      }
+
+      if (!userData || Object.keys(userData).length === 0) {
+        throw new BadRequestException("No data provided for update");
+      }
+
+      if (!userData.phone || typeof userData.phone !== "string") {
+        throw new BadRequestException(
+          "Phone number is required and must be a string"
+        );
+      }
+
+      const user = await UserService.getUserByPhone(userData.phone);
+      if (!user) {
+        throw new BadRequestException("User not found");
+      }
+
+      let profileImage = user.profileImage;
+      if (req.file) {
+        profileImage = await CloudinaryService.uploadImageIfExists(
+          req.file,
+          "ProfileImage"
+        );
+      }
+      const updatedUser = await UserService.updateUser(userId, {
+        ...userData,
+        profileImage,
+      });
+      res.status(200).json(updatedUser);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }

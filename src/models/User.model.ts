@@ -10,9 +10,58 @@ const UserSchema: Schema = new Schema(
       trim: true,
       index: true,
     },
-    role: { type: String, enum: ["Admin", "User"], default: "User" },
-    active: { type: Boolean, default: true, select: false },
-    OTP: { type: String, select: false },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+    },
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
+    profileImage: {
+      type: String,
+    },
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other"],
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: String,
+      trim: true,
+    },
+    role: {
+      type: String,
+      enum: ["Admin", "User"],
+      default: "User",
+    },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
+    OTP: {
+      type: String,
+      select: false,
+    },
   },
   {
     timestamps: true,
