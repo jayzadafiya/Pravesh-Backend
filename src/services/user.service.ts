@@ -11,10 +11,12 @@ import {
 import { ICart, IVenueCartItem } from "../interfaces/cart.interface";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { BadRequestException } from "../utils/exceptions";
+import { IUser } from "../interfaces/user.interface";
+import { get } from "http";
 
 class userService {
   getUserByPhone = async (phone: string) => {
-    return await UserModel.find({ phone: phone });
+    return await UserModel.findOne({ phone: phone });
   };
 
   getCartItemsByUserId = async (userId: mongoose.Types.ObjectId) => {
@@ -171,6 +173,10 @@ class userService {
     }
 
     return cart;
+  };
+
+  updateUser = async (userId: mongoose.Types.ObjectId, data: IUser) => {
+    return await updateOne(UserModel, userId, data);
   };
 
   removeCartItem = async (userId: mongoose.Types.ObjectId) => {
