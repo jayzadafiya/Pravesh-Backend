@@ -11,6 +11,7 @@ userRouter.get(
   protect,
   UserController.getSelectedTickets as any
 );
+userRouter.get("/tickets", protect, UserController.getUserAssignTickets as any);
 
 userRouter.post(
   "/add-free-tickets",
