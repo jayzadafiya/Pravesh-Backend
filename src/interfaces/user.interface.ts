@@ -12,6 +12,7 @@ export interface IUser extends Document {
   state?: string;
   pincode?: string;
   role: "Admin" | "User";
+  qrCode: string;
   active?: boolean;
   OTP?: string;
   profileImage?: string;
