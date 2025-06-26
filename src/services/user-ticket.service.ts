@@ -5,7 +5,8 @@ import UserTicketModel from "../models/User-ticket.model";
 class userTicketService {
   createTicket = async (
     userId: mongoose.Types.ObjectId,
-    selectedTickets: ICartEventTicket[]
+    selectedTickets: ICartEventTicket[],
+    status = "Pending"
   ) => {
     const ticketDocs = [];
 
@@ -20,6 +21,7 @@ class userTicketService {
           ticketType: ticketType._id,
           quantity: ticketType.count,
           price: ticketType.price,
+          status,
         });
       }
     }

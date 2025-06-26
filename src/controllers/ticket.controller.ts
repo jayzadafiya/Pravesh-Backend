@@ -1,7 +1,7 @@
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { EventTicketService } from "../services/event-ticket.service";
 import { BadRequestException } from "../utils/exceptions";
-import mongoose from "mongoose";
 
 class ticketController {
   upsertEventTicket = async (req: Request, res: Response) => {

@@ -4,7 +4,11 @@ import { BadRequestException } from "../utils/exceptions";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
 import { IVenueCartItem } from "../interfaces/cart.interface";
+import { EventTicketService } from "../services/event-ticket.service";
+import { UserTicketService } from "../services/user-ticket.service";
+import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import { CloudinaryService } from "../services/cloudinary.service";
+import { count } from "console";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -122,7 +126,7 @@ class userController {
             }
           }
         }
-
+        //TODO:ID cart item get 0 then completely remove from cart
         // If all tickets removed, remove the venue
         if (Object.keys(existingVenue.tickets).length === 0) {
           cart.items = cart.items.filter(
@@ -178,6 +182,63 @@ class userController {
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
+  };
+
+  addFreeTicket = async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    const {
+      eventId,
+      venueId,
+      items,
+    }: { eventId: string; venueId: string; items: { [x: string]: number } } =
+      req.body;
+
+    if (!eventId || !venueId || !items) {
+      throw new BadRequestException("Please provide valid input data");
+    }
+
+    const availableTickets = await EventTicketService.getAvailableTicketsCount(
+      new mongoose.Types.ObjectId(venueId)
+    );
+
+    const ticketTypes = [];
+    for (const ticketId in items) {
+      const quantity = items[ticketId];
+      const availableQuantity = availableTickets[ticketId].quantity || 0;
+
+      if (quantity > availableQuantity) {
+        throw new BadRequestException(`Something went wrong`);
+      }
+
+      ticketTypes.push({
+        _id: ticketId,
+        price: 0,
+        quantity: availableQuantity,
+        count: quantity,
+      });
+    }
+
+    const selectedTickets: any = [
+      {
+        _id: new mongoose.Types.ObjectId(venueId),
+        eventId: eventId,
+        ticketTypes,
+      },
+    ];
+
+    await UserTicketService.createTicket(userId, selectedTickets, "Confirmed");
+
+    await Promise.all(
+      ticketTypes.map((ticket) =>
+        EventTicketService.decreaseRemainingCount(
+          new mongoose.Types.ObjectId(venueId),
+          new mongoose.Types.ObjectId(ticket._id),
+          ticket.count
+        )
+      )
+    );
+
+    res.status(201).send({ message: "Free tickets added successfully" });
   };
 }
 
