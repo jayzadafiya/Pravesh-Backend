@@ -68,10 +68,42 @@ class eventTicketService {
     return venueTicket;
   };
 
-  createOrUpdateUserBuyTicket = async (
-    userId: mongoose.Types.ObjectId,
-    selectedTickets: ICartEventTicket[]
-  ) => {};
+  getAvailableTicketsCount = async (venueTicketId: mongoose.Types.ObjectId) => {
+    const data = await VenueTicketModel.findById(venueTicketId);
+    if (!data?.ticketTypes?.length) {
+      throw new BadRequestException("No ticket types available for this venue");
+    }
+
+    return data.ticketTypes.reduce((acc, ticketType) => {
+      acc[ticketType._id.toString()] = ticketType;
+      return acc;
+    }, {} as { [ticketId: string]: ITicketType });
+  };
+
+  decreaseRemainingCount = async (
+    venueTicketId: mongoose.Types.ObjectId,
+    ticketTypeId: mongoose.Types.ObjectId,
+    quantity: number
+  ) => {
+    const result = await VenueTicketModel.updateOne(
+      {
+        _id: venueTicketId,
+        "ticketTypes._id": ticketTypeId,
+        "ticketTypes.quantity": { $gte: quantity },
+      },
+      {
+        $inc: {
+          "ticketTypes.$.quantity": -quantity,
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new Error("Not enough tickets available or ticket not found.");
+    }
+
+    return result;
+  };
 }
 
 export const EventTicketService = new eventTicketService();

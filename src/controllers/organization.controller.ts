@@ -63,7 +63,6 @@ class organizationController {
       if (posterImage) data.posterImage = posterImage;
       if (bannerImage) data.bannerImage = bannerImage;
       if (mainImage) data.mainImage = mainImage;
-
       const event = await OrganizationService.createEvent({
         ...data,
         slug: slugify(data?.name, { lower: true, strict: true }),

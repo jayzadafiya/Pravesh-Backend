@@ -48,8 +48,26 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (err: any) => {
-  console.log("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.log(err.name, err.response.data);
+  console.error("💥 UNHANDLED REJECTION! Shutting down...");
+
+  if (err instanceof Error) {
+    console.error("Name:", err.name);
+    console.error("Message:", err.message);
+    console.error("Stack Trace:\n", err.stack);
+
+    const stackLines = err.stack?.split("\n");
+    if (stackLines && stackLines.length > 1) {
+      const fileInfo = stackLines[1].match(/\((.*):(\d+):(\d+)\)/);
+      if (fileInfo) {
+        console.error("File:", fileInfo[1]);
+        console.error("Line:", fileInfo[2]);
+        console.error("Column:", fileInfo[3]);
+      }
+    }
+  } else {
+    console.error("Non-Error rejection:", err);
+  }
+
   server.close(() => {
     process.exit(1);
   });
