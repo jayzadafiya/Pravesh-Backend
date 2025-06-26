@@ -62,6 +62,7 @@ const UserSchema: Schema = new Schema(
       type: String,
       select: false,
     },
+    qrCode: { type: String },
   },
   {
     timestamps: true,

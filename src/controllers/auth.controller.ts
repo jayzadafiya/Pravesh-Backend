@@ -7,12 +7,13 @@ import UserModel from "../models/User.model";
 import { BadRequestException, ForbiddenException } from "../utils/exceptions";
 import { AuthService } from "../services/auth.service";
 import { WhatsappService } from "../services/whatsapp.service";
+import { QRService } from "../services/QR.service";
 class authController {
   upsetUser = async (req: Request, res: Response) => {
     try {
       const phone = req.body.phone;
       const OTP = AuthService.createOtp();
-      const user = await upsertOne(
+      const user: any = await upsertOne(
         UserModel,
         { phone },
         { phone, OTP },
@@ -26,8 +27,12 @@ class authController {
           "User do not have access, Please contact admin"
         );
 
+      if (!user.qrCode) {
+        user.qrCode = await QRService.generateQRCode(phone);
+      }
       delete user.active;
 
+      user.save();
       //TODO: Add whatsapp otp
       // WhatsappService.sendOTPMessage(OTP, phone);
       await AuthService.createSendToken(user, 200, res);
