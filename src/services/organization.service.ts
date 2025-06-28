@@ -13,8 +13,8 @@ class organizationService {
       .limit(5);
   };
 
-  getEventPosters = async () => {
-    return await EventModel.find({})
+  getEventPosters = async (isPublished = false) => {
+    return await EventModel.find({ isPublished })
       .select("posterImage slug name description ")
       .lean();
   };
