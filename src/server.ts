@@ -16,6 +16,9 @@ app.use(
       "http://localhost:5173",
       "https://praveshnavratri.netlify.app",
       "https://mw1mqz88-5173.inc1.devtunnels.ms",
+      "https://praveshevent.netlify.app",
+      /\.pravesh\.events$/,
+      "https://pravesh.events",
     ],
     credentials: true,
   })
