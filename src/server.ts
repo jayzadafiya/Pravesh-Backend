@@ -13,11 +13,11 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
       "https://praveshnavratri.netlify.app",
       "https://mw1mqz88-5173.inc1.devtunnels.ms",
       "https://praveshevent.netlify.app",
       /\.pravesh\.events$/,
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
       "https://pravesh.events",
     ],
     credentials: true,
