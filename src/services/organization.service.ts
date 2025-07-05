@@ -8,7 +8,7 @@ import { IEvent } from "../interfaces/event.interface";
 class organizationService {
   getEventBanner = async () => {
     return await EventModel.find({})
-      .select("bannerImage name date location duration slug")
+      .select("bannerImage name startDate location duration slug")
       .lean()
       .limit(5);
   };

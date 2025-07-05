@@ -17,7 +17,8 @@ export interface IEvent extends Document {
   name: string;
   slug: string;
   description?: string;
-  date: Date;
+  startDate: Date;
+  endDate: Date;
   location?: string;
   organization: mongoose.Types.ObjectId;
   posterImage: string;

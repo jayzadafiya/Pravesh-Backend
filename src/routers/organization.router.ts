@@ -2,6 +2,7 @@ import * as express from "express";
 import { OrganizationController } from "../controllers/organization.controller";
 import protect from "../middleware/auth.middleware";
 import { upload } from "../config/multer.config";
+import { AdminEventController } from "../admin/controllers/event.controller";
 
 const organizationRouter = express.Router();
 
@@ -17,34 +18,7 @@ organizationRouter.get(
 
 organizationRouter.get("/get-event/:slug", OrganizationController.getEvent);
 
-//TODO: Add admin role auth
-organizationRouter.post(
-  "/",
-  protect,
-  OrganizationController.createOrganization as any
-);
-
-organizationRouter.post(
-  "/create-event",
-  protect,
-  upload.fields([
-    { name: "posterImage", maxCount: 1 },
-    { name: "bannerImage", maxCount: 1 },
-    { name: "mainImage", maxCount: 1 },
-  ]),
-  OrganizationController.createEvent
-);
-
-organizationRouter.patch(
-  "/update-event/:eventId",
-  protect,
-  upload.fields([
-    { name: "posterImage", maxCount: 1 },
-    { name: "bannerImage", maxCount: 1 },
-    { name: "mainImage", maxCount: 1 },
-  ]),
-  OrganizationController.updateEvent
-);
+organizationRouter.get("/get-event-list", AdminEventController.getAllEvents);
 
 //TODO: Add admin role auth
 organizationRouter.post(
@@ -78,4 +52,14 @@ organizationRouter.put(
   OrganizationController.updateOrCreateSponsors
 );
 
+organizationRouter.patch(
+  "/update-event/:eventId",
+  protect,
+  upload.fields([
+    { name: "posterImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+    { name: "mainImage", maxCount: 1 },
+  ]),
+  OrganizationController.updateEvent
+);
 export default organizationRouter;
