@@ -12,4 +12,6 @@ authRouter.post(
   AuthController.upsetUser
 );
 
+authRouter.post("/verifyOTP", AuthController.verifyOtp);
+
 export default authRouter;

@@ -17,6 +17,9 @@ const UserSchema: Schema = new Schema(
       unique: true,
       sparse: true,
     },
+    phonePrefix: {
+      type: String,
+    },
     firstName: {
       type: String,
       trim: true,
