@@ -62,4 +62,15 @@ organizationRouter.patch(
   ]),
   OrganizationController.updateEvent
 );
+
+organizationRouter.delete(
+  "/event-artist/:eventId/:artistId",
+  AdminEventController.removeArtistById as any
+);
+
+organizationRouter.delete(
+  "/event-sponsors/:eventId/:sponsorId",
+  AdminEventController.removeSponsorById as any
+);
+
 export default organizationRouter;

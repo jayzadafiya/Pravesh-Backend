@@ -12,14 +12,23 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "https://praveshnavratri.netlify.app",
-      "https://mw1mqz88-5173.inc1.devtunnels.ms",
-      "https://praveshevent.netlify.app",
-      /\.pravesh\.events$/,
-      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
-      "https://pravesh.events",
-    ],
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://pravesh.events",
+        "https://praveshnavratri.netlify.app",
+        "https://praveshevent.netlify.app",
+        /\.pravesh\.events$/,
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
+        "https://pravesh.events",
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

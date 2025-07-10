@@ -1,6 +1,7 @@
 import moment from "moment";
 import { getAll } from "../../utils/helper";
 import EventModel from "../../models/Event.model";
+import mongoose, { mongo } from "mongoose";
 
 class adminEventService {
   getEventList = async () => {
@@ -33,6 +34,26 @@ class adminEventService {
     });
 
     return updatedEvents;
+  };
+
+  removeArtistAndSponsorById = async (
+    eventId: mongoose.Types.ObjectId,
+    profile: mongoose.Types.ObjectId,
+    type: "artist" | "sponsor"
+  ) => {
+    const update =
+      type === "artist"
+        ? { $pull: { artists: { _id: profile } } }
+        : { $pull: { sponsors: { _id: profile } } };
+    const event = await EventModel.findOneAndUpdate({ _id: eventId }, update, {
+      new: true,
+    });
+
+    if (!event) {
+      throw new Error("Event not found or no matching artist/sponsor");
+    }
+
+    return event;
   };
 }
 
