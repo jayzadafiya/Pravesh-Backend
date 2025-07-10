@@ -18,6 +18,7 @@ app.use(
         "https://pravesh.events",
         "https://praveshnavratri.netlify.app",
         "https://praveshevent.netlify.app",
+        "https://praveshadmin.netlify.app",
         /\.pravesh\.events$/,
         /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
         "https://pravesh.events",
