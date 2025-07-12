@@ -1,23 +1,17 @@
 import * as jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { IUser } from "../interfaces/user.interface";
-import { upsertOne } from "../utils/helper";
-import UserModel from "../models/User.model";
-import { BadRequestException, ForbiddenException } from "../utils/exceptions";
 
 class authService {
-  private signToken = (id: mongoose.Types.ObjectId) => {
-    let jwtExpiresIn: any = process.env.JWT_EXPIRES_IN;
-
-    if (!isNaN(Number(jwtExpiresIn))) {
-      jwtExpiresIn = Number(jwtExpiresIn);
-    }
+  signToken = (
+    id: mongoose.Types.ObjectId,
+    jwtExpiresIn: any = process.env.JWT_EXPIRES_IN || "1d"
+  ) => {
     return jwt.sign({ id }, process.env.JWT_SECRET!, {
       expiresIn: jwtExpiresIn,
     });
   };
-
   createSendToken = async (user: IUser, statusCode: number, res: Response) => {
     const token = this.signToken(user.id);
     res.status(statusCode).json({
@@ -27,8 +21,15 @@ class authService {
     });
   };
 
+  verifyToken = (token: string) => {
+    try {
+      return jwt.verify(token, process.env.JWT_SECRET!);
+    } catch (error) {
+      return null;
+    }
+  };
   createOtp = () => {
-    return Math.floor(1000 + Math.random() * 9000);
+    return Math.floor(100000 + Math.random() * 900000);
   };
 }
 export const AuthService = new authService();

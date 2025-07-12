@@ -62,10 +62,15 @@ const UserSchema: Schema = new Schema(
       select: false,
     },
     OTP: {
-      type: String,
+      type: Number,
       select: false,
+      length: 6,
     },
     qrCode: { type: String },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
