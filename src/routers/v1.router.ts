@@ -15,4 +15,7 @@ router.use("/users", userRouter);
 router.use("/organization", organizationRouter);
 router.use("/payment", paymentRouter);
 
+router.get("/ping", (req, res) => {
+  res.send("✅ Pong");
+});
 export default router;
