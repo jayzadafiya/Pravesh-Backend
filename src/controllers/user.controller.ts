@@ -3,12 +3,11 @@ import { Response } from "express";
 import { BadRequestException } from "../utils/exceptions";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
-import { IVenueCartItem } from "../interfaces/cart.interface";
 import { EventTicketService } from "../services/event-ticket.service";
 import { UserTicketService } from "../services/user-ticket.service";
-import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import { CloudinaryService } from "../services/cloudinary.service";
-import { count } from "console";
+import { AuthService } from "../services/auth.service";
+import { EmailService } from "../services/email.service";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -184,10 +183,17 @@ class userController {
           "ProfileImage"
         );
       }
-      const updatedUser = await UserService.updateUser(userId, {
+      const updatedUser = (await UserService.updateUser(userId, {
         ...userData,
         profileImage,
-      });
+      })) as any;
+
+      // if (userData?.email !== updatedUser.email) {
+      updatedUser.emailVerified = false;
+      const JWTToken = await AuthService.signToken(userId, "5m");
+      await EmailService.sendAuthEmail(updatedUser.email, JWTToken);
+      await updatedUser.save();
+      // }
       res.status(200).json(updatedUser);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });

@@ -5,6 +5,8 @@ import { validateRequest } from "../middleware/validate-request";
 
 const authRouter = express.Router();
 
+authRouter.get("/verify", AuthController.verifyEmailToken);
+
 authRouter.post(
   "/login",
   validateLogin,

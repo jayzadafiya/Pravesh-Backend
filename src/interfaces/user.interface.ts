@@ -18,4 +18,5 @@ export interface IUser extends Document {
   profileImage?: string;
   createdAt: Date;
   updatedAt: Date;
+  emailVerified?: boolean;
 }
