@@ -5,7 +5,7 @@ import cors from "cors";
 import router from "./routers/v1.router";
 import globalErrorHandler from "./middleware/error-handler.middleware";
 import connectDB from "./config/db.config";
-
+import "./cron/pingJob";
 connectDB();
 
 const app = express();
