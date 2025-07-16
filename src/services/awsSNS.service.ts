@@ -3,7 +3,8 @@ import snsClient from "../config/AWS.config";
 
 class awsSNSService {
   sendOtpSMS = async (phoneNumber: string, otp: string) => {
-    const message = `🪪 Your Pravesh Events OTP is: ${otp}\n Do not share it with anyone.`;
+    const message = `${otp} is your One time password (OTP) to login to PraveshEvents. Don't share OTP with anyone.
+Please enter the OTP to proceed.`;
 
     const command = new PublishCommand({
       Message: message,
