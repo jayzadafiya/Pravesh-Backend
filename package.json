@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && copyfiles -u 1 src/templates/* dist/templates",
+    "build": "tsc && copyfiles -u 1 src/templates/* dist/",
     "start": "node dist/server.js",
     "dev": "nodemon  src/server.ts"
   },
