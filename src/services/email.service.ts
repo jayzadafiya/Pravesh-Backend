@@ -1,5 +1,5 @@
-import fs from "fs/promises";
 import path from "path";
+import fs from "fs";
 import { transporter } from "../config/email.config";
 import { BadRequestException } from "../utils/exceptions";
 import moment from "moment";
@@ -10,18 +10,11 @@ class emailService {
       const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
       const verifyUrl = `${BACKEND_URL}/auth/verify?token=${token}`;
 
-      // const templatePath = path.join(
-      //   __dirname,
-      //   "../templates/email-verification.html"
-      // );
-      // let htmlTemplate = fs.readFileSync(templatePath, "utf8");
-
-      const filePath = path.join(
-        process.cwd(),
-        "templates",
-        "email-verification.html"
+      const templatePath = path.join(
+        __dirname,
+        "../templates/email-verification.html"
       );
-      let htmlTemplate = await fs.readFile(filePath, "utf-8");
+      let htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
       htmlTemplate = htmlTemplate.replace(/{{verifyUrl}}/g, verifyUrl);
 
@@ -41,20 +34,11 @@ class emailService {
 
   sendTicketConfirmationEmail = async (data: any, user: any) => {
     try {
-      // const templatePath = path.join(
-      //   __dirname,
-      //   "../templates/ticket-confirmation.html"
-      // );
-      // let htmlTemplate = fs.readFileSync(templatePath, "utf8");
-
-      const filePath = path.join(
-        process.cwd(),
-        "templates",
-        "ticket-confirmation.html"
+      const templatePath = path.join(
+        __dirname,
+        "../templates/ticket-confirmation.html"
       );
-
-      console.log("File path:", filePath);
-      let htmlTemplate = await fs.readFile(filePath, "utf-8");
+      let htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
       htmlTemplate = htmlTemplate.replace(
         /{{eventMainBanner}}/g,
