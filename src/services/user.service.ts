@@ -1,22 +1,18 @@
 import mongoose from "mongoose";
 import UserModel from "../models/User.model";
 import CartModel from "../models/Cart.model";
-import {
-  createOne,
-  deleteOne,
-  getOne,
-  updateOne,
-  upsertOne,
-} from "../utils/helper";
-import { ICart, IVenueCartItem } from "../interfaces/cart.interface";
-import { AuthRequest } from "../interfaces/auth-request.interface";
-import { BadRequestException } from "../utils/exceptions";
+import { createOne, deleteOne, getOne, updateOne } from "../utils/helper";
+import { IVenueCartItem } from "../interfaces/cart.interface";
 import { IUser } from "../interfaces/user.interface";
-import { get } from "http";
+import { EmailService } from "./email.service";
 
 class userService {
   getUserByPhone = async (phone: string) => {
     return await UserModel.findOne({ phone: phone });
+  };
+
+  getUserById = async (userId: mongoose.Types.ObjectId) => {
+    return await getOne(UserModel, userId);
   };
 
   getCartItemsByUserId = async (userId: mongoose.Types.ObjectId) => {
@@ -58,6 +54,7 @@ class userService {
       {
         $addFields: {
           "venue.eventName": "$event.name",
+          "venue.eventMainBanner": "$event.mainImage",
         },
       },
 
@@ -103,7 +100,10 @@ class userService {
           date: "$venue.date",
           eventId: "$event._id",
           eventName: "$venue.eventName",
+          venue: "$venue.venue",
+          address: "$venue.address",
           ticketTypes: "$venue.ticketTypes",
+          eventMainBanner: "$venue.eventMainBanner",
         },
       },
     ]);
@@ -149,9 +149,10 @@ class userService {
 
     return selectedTickets[0];
   };
-  async cerateUser(phone: any) {
+
+  cerateUser = async (phone: any) => {
     return await createOne(UserModel, { phone });
-  }
+  };
 
   upsertCart = async (
     userId: mongoose.Types.ObjectId,
@@ -162,8 +163,6 @@ class userService {
       return await createOne(CartModel, {
         _id: userId,
       });
-    } else if (cart && !items.length) {
-      return cart;
     } else if (items) {
       cart.items = items;
 
@@ -182,5 +181,30 @@ class userService {
   removeCartItem = async (userId: mongoose.Types.ObjectId) => {
     return await deleteOne(CartModel, userId);
   };
+
+  sendTicketConfirmationEmail = async (selectedTickets: any, user: any) => {
+    await Promise.all(
+      selectedTickets.map(async (ticketGroup: any) => {
+        const ticketCount = ticketGroup.ticketTypes.reduce(
+          (acc: number, type: any) => acc + +type.count,
+          0
+        );
+        const emailPayload = {
+          eventMainBanner: ticketGroup.eventMainBanner,
+          eventName: ticketGroup.eventName,
+          eventDateTime: ticketGroup.date,
+          venueName: ticketGroup.venue,
+          address: ticketGroup.address,
+          ticketCount,
+        };
+        console.log(emailPayload);
+        await EmailService.sendTicketConfirmationEmail(emailPayload, {
+          email: user.email,
+          qrCode: user.qrCode,
+        });
+      })
+    );
+  };
 }
+
 export const UserService = new userService();

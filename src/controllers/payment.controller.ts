@@ -6,16 +6,42 @@ import { UserTicketService } from "../services/user-ticket.service";
 import { TransactionService } from "../services/transaction.service";
 import { ITransaction } from "../interfaces/transaction.interface";
 import { UserService } from "../services/user.service";
+import { EventTicketService } from "../services/event-ticket.service";
+import mongoose from "mongoose";
 
 class paymentController {
   processPayment = async (req: AuthRequest, res: Response) => {
     try {
-      const { amount, currency } = req.body;
+      const { amount, currency, selectedTickets } = req.body;
 
       if (!amount || typeof amount !== "number" || amount <= 1) {
         throw new BadRequestException(
           "Invalid amount. Amount must be a number greater than 1."
         );
+      }
+
+      if (!Array.isArray(selectedTickets) || selectedTickets.length === 0) {
+        throw new BadRequestException("Selected tickets are required");
+      }
+
+      for (const ticketGroup of selectedTickets) {
+        const venueId = ticketGroup._id;
+        const ticketTypes = ticketGroup.ticketTypes;
+
+        const availableTickets =
+          await EventTicketService.getAvailableTicketsCount(
+            new mongoose.Types.ObjectId(venueId)
+          );
+
+        for (const ticket of ticketTypes) {
+          const availableQuantity = availableTickets[ticket._id]?.quantity || 0;
+
+          if (ticket.count > availableQuantity) {
+            throw new BadRequestException(
+              `Not enough availability for ticket type: ${ticket.type}`
+            );
+          }
+        }
       }
       const order = await PaymentService.createPaymentIntent(amount, currency);
 
@@ -44,6 +70,13 @@ class paymentController {
       if (!selectedTickets || selectedTickets.length === 0) {
         throw new BadRequestException("No tickets selected.");
       }
+
+      const user = await UserService.getUserById(userId);
+
+      if (!user) {
+        throw new BadRequestException("User not found");
+      }
+
       const newTickets = await UserTicketService.createTicket(
         userId,
         selectedTickets
@@ -93,9 +126,41 @@ class paymentController {
         );
       }
 
-      await UserService.removeCartItem(userId);
-
       res.status(200).send({ data: req.body });
+
+      // Background task using process.nextTick or setImmediate
+      setImmediate(async () => {
+        try {
+          //Decrease ticket count
+          await Promise.all(
+            selectedTickets.map((ticketGroup: any) =>
+              Promise.all(
+                ticketGroup.ticketTypes.map((ticketType: any) => {
+                  console.log(
+                    "============",
+                    new mongoose.Types.ObjectId(ticketGroup._id),
+                    new mongoose.Types.ObjectId(ticketType._id),
+                    ticketType.count,
+                    "============"
+                  );
+                  return EventTicketService.decreaseRemainingCount(
+                    new mongoose.Types.ObjectId(ticketGroup._id),
+                    new mongoose.Types.ObjectId(ticketType._id),
+                    ticketType.count
+                  );
+                })
+              )
+            )
+          );
+
+          // Send ticket confirmation email
+          await UserService.sendTicketConfirmationEmail(selectedTickets, user);
+
+          await UserService.removeCartItem(userId);
+        } catch (err: any) {
+          console.error("Background task failed:", err.message);
+        }
+      });
     } catch (error: any) {
       console.error("Error verifying payment signature:", error);
       res.status(error.statusCode || 500).send({ message: error.message });

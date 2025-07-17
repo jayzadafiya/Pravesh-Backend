@@ -8,9 +8,15 @@ import {
 import EventTicketModel from "../models/Event-ticket.model";
 import VenueTicketModel from "../models/Venue-ticket.model";
 import { BadRequestException } from "../utils/exceptions";
-import { upsertOne } from "../utils/helper";
+import { getOne, upsertOne } from "../utils/helper";
 
 class eventTicketService {
+  getVenueTicketById = async (
+    venueId: mongoose.Types.ObjectId
+  ): Promise<IVenueTicket | null> => {
+    return getOne(VenueTicketModel, venueId);
+  };
+
   getEventTicketDetails = async (
     eventId: string
   ): Promise<{ eventTicket: IEventTicket; venueTickets: IVenueTicket[] }> => {
@@ -88,8 +94,12 @@ class eventTicketService {
     const result = await VenueTicketModel.updateOne(
       {
         _id: venueTicketId,
-        "ticketTypes._id": ticketTypeId,
-        "ticketTypes.quantity": { $gte: quantity },
+        ticketTypes: {
+          $elemMatch: {
+            _id: ticketTypeId,
+            quantity: { $gte: quantity },
+          },
+        },
       },
       {
         $inc: {
