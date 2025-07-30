@@ -93,6 +93,10 @@ class cashFreeService {
         },
       };
 
+      console.log("Creating Cashfree order:", orderRequest);
+      console.log(this.getBaseUrl());
+      console.log("Headers:", this.getHeaders());
+
       const response = await axios.post(
         `${this.getBaseUrl()}/orders`,
         orderRequest,
