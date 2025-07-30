@@ -43,11 +43,12 @@ class cashFreeService {
     }
   ) => {
     try {
-      const baseReturnUrl = "http://localhost:5173/payment/success";
-      // process.env.CASHFREE_RETURN_URL ||
+      const baseReturnUrl =
+        process.env.CASHFREE_RETURN_URL ||
+        "http://localhost:5173/payment/success";
       const baseWebhookUrl =
+        process.env.CASHFREE_WEBHOOK_URL ||
         "http://localhost:3000/api/v1/payment/cashfree/webhook";
-      // process.env.CASHFREE_WEBHOOK_URL ||
 
       const returnUrl =
         CASHFREE_CONFIG.environment === "SANDBOX" &&
