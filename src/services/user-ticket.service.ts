@@ -9,7 +9,7 @@ class userTicketService {
     })
       .populate({
         path: "event",
-        select: "name startDate",
+        select: "name startDate mainImage",
       })
       .populate({
         path: "venue",
@@ -33,6 +33,7 @@ class userTicketService {
           _id: ticket.event?._id,
           name: ticket.event?.name,
           startDate: ticket.event?.startDate,
+          posterImage: ticket.event?.mainImage,
         },
         venue: {
           _id: venue?._id,
