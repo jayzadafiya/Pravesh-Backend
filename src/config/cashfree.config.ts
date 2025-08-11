@@ -7,13 +7,14 @@ export const cashfree = Cashfree;
 export const CASHFREE_CONFIG = {
   appId: process.env.CASHFREE_APP_ID!,
   secretKey: process.env.CASHFREE_SECRET_KEY!,
-  environment: process.env.NODE_ENV === "production" ? "PRODUCTION" : "SANDBOX",
+  environment: "SANDBOX",
   apiVersion: "2023-08-01",
 };
+// process.env.NODE_ENV === "production" ? "PRODUCTION" :
 
 // Log the environment for debugging (remove in production)
-if (process.env.NODE_ENV !== "production") {
-  console.log("Cashfree configured for SANDBOX environment");
-} else {
-  console.log("Cashfree configured for PRODUCTION environment");
-}
+// if (process.env.NODE_ENV === "production") {
+//   console.log("Cashfree configured for SANDBOX environment");
+// } else {
+//   console.log("Cashfree configured for PRODUCTION environment");
+// }
