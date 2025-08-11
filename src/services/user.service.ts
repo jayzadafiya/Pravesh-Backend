@@ -55,6 +55,7 @@ class userService {
         $addFields: {
           "venue.eventName": "$event.name",
           "venue.eventMainBanner": "$event.mainImage",
+          "venue.eventPoster": "$event.posterImage",
         },
       },
 
@@ -104,6 +105,7 @@ class userService {
           address: "$venue.address",
           ticketTypes: "$venue.ticketTypes",
           eventMainBanner: "$venue.eventMainBanner",
+          eventPosterImage: "$venue.eventPoster",
         },
       },
     ]);
@@ -163,7 +165,7 @@ class userService {
       return await createOne(CartModel, {
         _id: userId,
       });
-    } else if (items) {
+    } else if (items?.length) {
       cart.items = items;
 
       return await updateOne(CartModel, userId, {

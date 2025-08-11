@@ -1,18 +1,56 @@
 import * as express from "express";
 import protect from "../middleware/auth.middleware";
 import { PaymentController } from "../controllers/payment.controller";
+import { validateRequest } from "../middleware/validate-request";
+import {
+  validateCreatePaymentOrder,
+  validateVerifyPayment,
+  validateGetPaymentStatus,
+  validateWebhookData,
+} from "../validations/payment.validation";
 
 const paymentRouter = express.Router();
 
+// RAZORPAY ROUTES (COMMENTED - KEEPING FOR BACKWARD COMPATIBILITY)
+// paymentRouter.post(
+//   "/get-payment-intent",
+//   protect,
+//   PaymentController.processPayment as any
+// );
+// paymentRouter.post(
+//   "/check-and-add-tickets",
+//   protect,
+//   PaymentController.checkAndAddTickets as any
+// );
+
+// CASHFREE ROUTES (NEW IMPLEMENTATION)
 paymentRouter.post(
-  "/get-payment-intent",
+  "/cashfree/create-order",
   protect,
-  PaymentController.processPayment as any
+  validateCreatePaymentOrder,
+  validateRequest,
+  PaymentController.createCashfreePaymentOrder as any
 );
+
 paymentRouter.post(
-  "/check-and-add-tickets",
+  "/cashfree/verify-payment",
   protect,
-  PaymentController.checkAndAddTickets as any
+  PaymentController.verifyCashfreePaymentAndAddTickets as any
+);
+
+// Webhook endpoint - No auth required, raw body parsing for signature verification
+paymentRouter.post(
+  "/cashfree/webhook",
+  express.raw({ type: "application/json" }),
+  PaymentController.handleCashfreeWebhook as any
+);
+
+paymentRouter.get(
+  "/cashfree/status/:orderId",
+  protect,
+  validateGetPaymentStatus,
+  validateRequest,
+  PaymentController.getCashfreePaymentStatus as any
 );
 
 export default paymentRouter;
