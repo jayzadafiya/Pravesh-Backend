@@ -39,8 +39,12 @@ class authController {
 
       user.save();
 
-      // await AwsSNSService.sendOtpSMS(`+${phonePrefix}${phone}`, OTP.toString());
-
+      if (process.env.MAIN_ENVIRONMENT !== "development") {
+        await AwsSNSService.sendOtpSMS(
+          `+${phonePrefix}${phone}`,
+          OTP.toString()
+        );
+      }
       res.status(200).json({
         sendOtp: true,
       });
@@ -53,7 +57,10 @@ class authController {
       const { phone, otp } = req.body;
       const user: any = await UserModel.findOne({ phone }).select("+OTP");
       if (!user) throw new BadRequestException("User not found");
-      if (+"000000" !== +otp) throw new ForbiddenException("Invalid OTP");
+
+      if (process.env.MAIN_ENVIRONMENT !== "development") {
+        if (+user.OTP !== +otp) throw new ForbiddenException("Invalid OTP");
+      }
 
       user.OTP = null;
       await user.save();
