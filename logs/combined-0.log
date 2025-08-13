@@ -1,0 +1,41 @@
+2025-08-12T01:10:26: 🚀 Starting server... (Attempt 1)
+2025-08-12T01:10:27: MongoDB connected successfully
+2025-08-12T01:10:27: ✅ Server is running successfully on port 3000
+2025-08-12T01:10:27: 🌍 Environment: production
+2025-08-12T23:14:37: 🚀 Starting server... (Attempt 1)
+2025-08-12T23:14:38: MongoDB connected successfully
+2025-08-12T23:14:38: ✅ Server is running successfully on port 3000
+2025-08-12T23:14:38: 🌍 Environment: production
+2025-08-12T23:15:00: [2025-08-12T17:45:00.066Z] Ping success: 200
+2025-08-12T23:15:45: 🚀 Starting server... (Attempt 1)
+2025-08-12T23:15:47: MongoDB connected successfully
+2025-08-12T23:15:47: ✅ Server is running successfully on port 3000
+2025-08-12T23:15:47: 🌍 Environment: production
+2025-08-12T23:15:59: Error: UnauthorizedException: You are not logged in!!
+2025-08-12T23:15:59:     at C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:59:19
+2025-08-12T23:15:59:     at Generator.next (<anonymous>)
+2025-08-12T23:15:59:     at C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:41:71
+2025-08-12T23:15:59:     at new Promise (<anonymous>)
+2025-08-12T23:15:59:     at __awaiter (C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:37:12)
+2025-08-12T23:15:59:     at protect (C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:51:37)
+2025-08-12T23:15:59:     at Layer.handle [as handle_request] (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\layer.js:95:5)
+2025-08-12T23:15:59:     at next (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\route.js:149:13)
+2025-08-12T23:15:59:     at Route.dispatch (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\route.js:119:3)
+2025-08-12T23:15:59:     at Layer.handle [as handle_request] (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\layer.js:95:5) {
+2025-08-12T23:15:59:   statusCode: 401,
+2025-08-12T23:15:59:   isOperational: true
+2025-08-12T23:15:59: }
+2025-08-12T23:15:59: Error: UnauthorizedException: You are not logged in!!
+2025-08-12T23:15:59:     at C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:59:19
+2025-08-12T23:15:59:     at Generator.next (<anonymous>)
+2025-08-12T23:15:59:     at C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:41:71
+2025-08-12T23:15:59:     at new Promise (<anonymous>)
+2025-08-12T23:15:59:     at __awaiter (C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:37:12)
+2025-08-12T23:15:59:     at protect (C:\Jay\Pravesh\Pravesh Backend\dist\middleware\auth.middleware.js:51:37)
+2025-08-12T23:15:59:     at Layer.handle [as handle_request] (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\layer.js:95:5)
+2025-08-12T23:15:59:     at next (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\route.js:149:13)
+2025-08-12T23:15:59:     at Route.dispatch (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\route.js:119:3)
+2025-08-12T23:15:59:     at Layer.handle [as handle_request] (C:\Jay\Pravesh\Pravesh Backend\node_modules\express\lib\router\layer.js:95:5) {
+2025-08-12T23:15:59:   statusCode: 401,
+2025-08-12T23:15:59:   isOperational: true
+2025-08-12T23:15:59: }

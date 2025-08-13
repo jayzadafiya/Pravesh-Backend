@@ -5,7 +5,15 @@
   "scripts": {
     "build": "tsc && copyfiles -u 1 src/templates/* dist/",
     "start": "node dist/server.js",
-    "dev": "nodemon  src/server.ts"
+    "dev": "nodemon  src/server.ts",
+    "pm2:start": "pm2 start ecosystem.config.json",
+    "pm2:stop": "pm2 stop pravesh-backend",
+    "pm2:restart": "pm2 restart pravesh-backend",
+    "pm2:delete": "pm2 delete pravesh-backend",
+    "pm2:logs": "pm2 logs pravesh-backend",
+    "pm2:monit": "pm2 monit",
+    "production": "npm run build && pm2 start ecosystem.config.json --env production",
+    "dev:pm2": "npm run build && pm2 start ecosystem.config.json --env development"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +50,7 @@
     "@types/qrcode": "^1.5.5",
     "copyfiles": "^2.4.1",
     "nodemon": "^3.1.9",
+    "pm2": "^5.4.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
