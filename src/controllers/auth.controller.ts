@@ -5,6 +5,9 @@ import { BadRequestException, ForbiddenException } from "../utils/exceptions";
 import { AuthService } from "../services/auth.service";
 import { QRService } from "../services/QR.service";
 import { AwsSNSService } from "../services/awsSNS.service";
+import { AuthRequest } from "../interfaces/auth-request.interface";
+import { UserService } from "../services/user.service";
+import { EmailService } from "../services/email.service";
 class authController {
   upsetUser = async (req: Request, res: Response) => {
     try {
@@ -33,7 +36,7 @@ class authController {
         );
 
       if (!user.qrCode) {
-        user.qrCode = await QRService.generateQRCode(phone);
+        user.qrCode = await QRService.generateQRCode(user.id);
       }
       delete user.active;
 
@@ -66,6 +69,29 @@ class authController {
       await user.save();
 
       await AuthService.createSendToken(user, 200, res);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  sendResetEmail = async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        throw new BadRequestException("User ID is required");
+      }
+
+      const user = (await UserService.getUserById(userId)) as any;
+      if (!user) {
+        throw new BadRequestException("User not found");
+      }
+
+      user.emailVerified = false;
+      const JWTToken = await AuthService.signToken(userId, "5m");
+      await EmailService.sendAuthEmail(user.email!, JWTToken);
+      await user.save();
+      res.status(200).json(user);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
