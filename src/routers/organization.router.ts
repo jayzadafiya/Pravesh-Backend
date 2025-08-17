@@ -17,6 +17,7 @@ organizationRouter.get(
 );
 
 organizationRouter.get("/get-event/:slug", OrganizationController.getEvent);
+organizationRouter.get("/event/:id", AdminEventController.getEvent);
 
 organizationRouter.get("/get-event-list", AdminEventController.getAllEvents);
 
@@ -29,7 +30,6 @@ organizationRouter.post(
 
 organizationRouter.post(
   "/create-event",
-  protect,
   upload.fields([
     { name: "posterImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
@@ -54,7 +54,6 @@ organizationRouter.put(
 
 organizationRouter.patch(
   "/update-event/:eventId",
-  protect,
   upload.fields([
     { name: "posterImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },

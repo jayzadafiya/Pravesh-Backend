@@ -6,11 +6,10 @@ const ticketRouter = express.Router();
 
 ticketRouter.get(
   "/ticket-details/:eventId",
-  protect,
   TicketController.getEventTicketDetails as any
 );
 
-ticketRouter.post("/event-ticket", protect, TicketController.upsertEventTicket);
+ticketRouter.post("/event-ticket", TicketController.upsertEventTicket);
 ticketRouter.post("/venue-ticket", TicketController.upsertVenueTicket);
 
 export default ticketRouter;

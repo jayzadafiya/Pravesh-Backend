@@ -76,4 +76,14 @@ const EventSchema: Schema = new Schema(
   }
 );
 
+EventSchema.virtual("status").get(function (this: any) {
+  const now = new Date();
+  if (now < this.startDate) return "upcoming";
+  if (now >= this.startDate && now <= this.endDate) return "ongoing";
+  return "completed";
+});
+
+EventSchema.set("toJSON", { virtuals: true });
+EventSchema.set("toObject", { virtuals: true });
+
 export default mongoose.model<IEvent>("Event", EventSchema);

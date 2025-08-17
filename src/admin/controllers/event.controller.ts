@@ -1,8 +1,21 @@
 import { Request, Response } from "express";
 import { AdminEventService } from "../services/event.service";
 import mongoose from "mongoose";
+import { BadRequestException } from "../../utils/exceptions";
 
 class adminEventController {
+  getEvent = async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const event = await AdminEventService.getEvent(id);
+      if (!event) throw new BadRequestException("Event not found");
+      res.status(200).json(event);
+    } catch (error: any) {
+      console.error("Error fetching event:", error);
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
   getAllEvents = async (req: Request, res: Response) => {
     try {
       const events = await AdminEventService.getEventList();
