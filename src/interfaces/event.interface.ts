@@ -30,4 +30,5 @@ export interface IEvent extends Document {
   updatedAt?: Date;
   artists?: IArtist[];
   sponsors?: ISponsor[];
+  status?: "upcoming" | "ongoing" | "completed";
 }

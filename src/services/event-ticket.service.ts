@@ -50,15 +50,21 @@ class eventTicketService {
   };
 
   createOrUpdateVenueTicket = async (
+    _id: string | undefined,
     eventTicket: string,
     venue: string,
     address: string,
-    date: Date,
+    date: string,
     ticketTypes: ITicketType[]
   ): Promise<IVenueTicket> => {
+    console.log("Creating or updating venue ticket", {
+      eventTicket,
+      venue,
+      date,
+    });
     const venueTicket = await upsertOne(
       VenueTicketModel,
-      { eventTicket, venue, date },
+      { _id },
       { eventTicket, venue, address, date, ticketTypes }
     );
     if (!venueTicket) {

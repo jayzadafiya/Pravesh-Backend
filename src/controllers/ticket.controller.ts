@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { EventTicketService } from "../services/event-ticket.service";
 import { BadRequestException } from "../utils/exceptions";
+import moment from "moment";
 
 class ticketController {
   upsertEventTicket = async (req: Request, res: Response) => {
@@ -36,13 +37,14 @@ class ticketController {
 
   upsertVenueTicket = async (req: Request, res: Response) => {
     try {
-      const { eventTicket, venue, address, date, ticketTypes } = req.body;
+      const { eventTicket, venue, address, date, ticketTypes, _id } = req.body;
 
       const updatedTicket = await EventTicketService.createOrUpdateVenueTicket(
+        _id,
         eventTicket,
         venue,
         address,
-        date,
+        moment(date).utc().startOf("day").format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
         ticketTypes
       );
 
