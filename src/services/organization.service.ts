@@ -7,24 +7,56 @@ import { IEvent } from "../interfaces/event.interface";
 
 class organizationService {
   getEventBanner = async () => {
-    return await EventModel.find({})
+    const currentDate = new Date();
+    return await EventModel.find({
+      endDate: { $gte: currentDate },
+    })
       .select("bannerImage name startDate location duration slug")
       .lean()
       .limit(5);
   };
 
   getEventPosters = async (isPublished = false) => {
-    return await EventModel.find({ isPublished })
+    const currentDate = new Date();
+    return await EventModel.find({
+      isPublished,
+      endDate: { $gte: currentDate },
+    })
       .select("posterImage slug name description ")
       .lean();
   };
 
   getEvent = async (slug: string): Promise<IEvent | null> => {
-    return await EventModel.findOne({ slug });
+    const currentDate = new Date();
+    return await EventModel.findOne({
+      slug,
+      endDate: { $gte: currentDate }, // Only return event if it hasn't ended yet
+    });
   };
 
   getEventById = async (eventId: string): Promise<IEvent | null> => {
+    const currentDate = new Date();
+    return await EventModel.findOne({
+      _id: new mongoose.Types.ObjectId(eventId),
+      endDate: { $gte: currentDate }, // Only return event if it hasn't ended yet
+    });
+  };
+
+  // Method to get event by ID without date restriction (for admin purposes)
+  getEventByIdAdmin = async (eventId: string): Promise<IEvent | null> => {
     return await getOne(EventModel, new mongoose.Types.ObjectId(eventId));
+  };
+
+  // Method to get all active events
+  getActiveEvents = async () => {
+    const currentDate = new Date();
+    return await EventModel.find({
+      endDate: { $gte: currentDate },
+      isPublished: true,
+    })
+      .select("name slug startDate endDate location posterImage bannerImage")
+      .lean()
+      .sort({ startDate: 1 }); // Sort by start date
   };
 
   createOrganization = async (data: IOrganization) => {
@@ -47,7 +79,8 @@ class organizationService {
     entity: { name: string; profileImage: string; order: number },
     type: "artists" | "sponsors"
   ) => {
-    const event = await this.getEventById(eventId);
+    // Use admin method for entity updates (admins can update expired events)
+    const event = await this.getEventByIdAdmin(eventId);
     if (!event) throw { statusCode: 404, message: "Event not found" };
 
     if (!event[type]) {
