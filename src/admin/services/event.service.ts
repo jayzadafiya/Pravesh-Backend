@@ -42,15 +42,17 @@ class adminEventService {
     return updatedEvents;
   };
 
-  removeArtistAndSponsorById = async (
+  removeEntityById = async (
     eventId: mongoose.Types.ObjectId,
     profile: mongoose.Types.ObjectId,
-    type: "artist" | "sponsor"
+    type: "artist" | "sponsor" | "partner"
   ) => {
     const update =
       type === "artist"
         ? { $pull: { artists: { _id: profile } } }
-        : { $pull: { sponsors: { _id: profile } } };
+        : type === "sponsor"
+        ? { $pull: { sponsors: { _id: profile } } }
+        : { $pull: { partners: { _id: profile } } };
     const event = await EventModel.findOneAndUpdate({ _id: eventId }, update, {
       new: true,
     });

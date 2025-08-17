@@ -27,6 +27,7 @@ async function startServer() {
         origin: function (origin, callback) {
           const allowedOrigins = [
             "http://localhost:5173",
+            "http://localhost:3001",
             "https://pravesh.events",
             "https://praveshnavratri.netlify.app",
             "https://praveshevent.netlify.app",
