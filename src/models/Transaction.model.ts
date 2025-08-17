@@ -9,16 +9,24 @@ const TransactionSchema: Schema = new Schema<ITransaction>(
       required: true,
       index: true,
     },
-    razorpayOrderId: {
+    // Generic payment fields (works for both Razorpay and Cashfree)
+    orderId: {
       type: String,
       required: true,
       unique: true,
     },
-    razorpayPaymentId: {
+    paymentId: {
       type: String,
     },
-    razorpaySignature: {
+    signature: {
       type: String,
+    },
+    // Payment gateway identifier
+    paymentGateway: {
+      type: String,
+      enum: ["razorpay", "cashfree"],
+      required: true,
+      default: "cashfree",
     },
     amount: {
       type: Number,
@@ -45,5 +53,8 @@ const TransactionSchema: Schema = new Schema<ITransaction>(
   },
   { timestamps: true }
 );
+
+// Create compound index for better query performance
+TransactionSchema.index({ paymentGateway: 1, orderId: 1 });
 
 export default mongoose.model<ITransaction>("Transaction", TransactionSchema);

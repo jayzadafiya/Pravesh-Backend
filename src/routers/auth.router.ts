@@ -2,8 +2,11 @@ import * as express from "express";
 import { AuthController } from "../controllers/auth.controller";
 import { validateLogin } from "../validations/auth.validation";
 import { validateRequest } from "../middleware/validate-request";
+import protect from "../middleware/auth.middleware";
 
 const authRouter = express.Router();
+
+authRouter.get("/verify", AuthController.verifyEmailToken);
 
 authRouter.post(
   "/login",
@@ -14,4 +17,9 @@ authRouter.post(
 
 authRouter.post("/verifyOTP", AuthController.verifyOtp);
 
+authRouter.post(
+  "/resend-verification-email",
+  protect,
+  AuthController.sendResetEmail as any
+);
 export default authRouter;

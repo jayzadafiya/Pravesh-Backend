@@ -3,12 +3,12 @@ import { Response } from "express";
 import { BadRequestException } from "../utils/exceptions";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
-import { IVenueCartItem } from "../interfaces/cart.interface";
 import { EventTicketService } from "../services/event-ticket.service";
 import { UserTicketService } from "../services/user-ticket.service";
-import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import { CloudinaryService } from "../services/cloudinary.service";
-import { count } from "console";
+import { AuthService } from "../services/auth.service";
+import { EmailService } from "../services/email.service";
+import { OrganizationService } from "../services/organization.service";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -91,12 +91,11 @@ class userController {
         );
 
         if (!existingVenue) {
-          // Add new venue only if at least one valid ticket
+          // Add new venue if it doesn't exist
           const newTickets: Record<string, number> = {};
 
           for (const ticketObj of ticketsArray as Record<string, number>[]) {
             const [ticketId, quantity] = Object.entries(ticketObj)[0];
-
             if (
               mongoose.Types.ObjectId.isValid(ticketId) &&
               typeof quantity === "number" &&
@@ -116,7 +115,7 @@ class userController {
           continue;
         }
 
-        // Update existing venue tickets
+        // Update existing tickets
         for (const ticketObj of ticketsArray as Record<string, number>[]) {
           const [ticketId, quantity] = Object.entries(ticketObj)[0];
 
@@ -136,17 +135,18 @@ class userController {
             }
           }
         }
-        //TODO:ID cart item get 0 then completely remove from cart
-        // If all tickets removed, remove the venue
-        if (Object.keys(existingVenue.tickets).length === 0) {
-          cart.items = cart.items.filter(
-            (item) => item.venueId.toString() !== venueId
-          );
-        }
       }
 
-      await UserService.upsertCart(userId, cart.items);
+      // 🧹 Remove venues with empty ticket objects
+      cart.items = cart.items.filter((item) => {
+        if (item.tickets instanceof Map) {
+          return item.tickets.size > 0;
+        } else {
+          return Object.keys(item.tickets || {}).length > 0;
+        }
+      });
 
+      await UserService.upsertCart(userId, cart.items);
       res.status(201).send(cart.items);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
@@ -184,10 +184,17 @@ class userController {
           "ProfileImage"
         );
       }
-      const updatedUser = await UserService.updateUser(userId, {
+      const updatedUser = (await UserService.updateUser(userId, {
         ...userData,
         profileImage,
-      });
+      })) as any;
+
+      // if (userData?.email !== updatedUser.email) {
+      updatedUser.emailVerified = false;
+      const JWTToken = await AuthService.signToken(userId, "5m");
+      await EmailService.sendAuthEmail(updatedUser.email, JWTToken);
+      await updatedUser.save();
+      // }
       res.status(200).json(updatedUser);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
@@ -207,11 +214,16 @@ class userController {
       throw new BadRequestException("Please provide valid input data");
     }
 
+    const user = await UserService.getUserById(userId);
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
     const availableTickets = await EventTicketService.getAvailableTicketsCount(
       new mongoose.Types.ObjectId(venueId)
     );
 
-    const ticketTypes = [];
+    const ticketTypes: any = [];
     for (const ticketId in items) {
       const quantity = items[ticketId];
       const availableQuantity = availableTickets[ticketId].quantity || 0;
@@ -239,7 +251,7 @@ class userController {
     await UserTicketService.createTicket(userId, selectedTickets, "Confirmed");
 
     await Promise.all(
-      ticketTypes.map((ticket) =>
+      ticketTypes.map((ticket: any) =>
         EventTicketService.decreaseRemainingCount(
           new mongoose.Types.ObjectId(venueId),
           new mongoose.Types.ObjectId(ticket._id),
@@ -247,8 +259,36 @@ class userController {
         )
       )
     );
-
     res.status(201).send({ message: "Free tickets added successfully" });
+
+    setImmediate(async () => {
+      try {
+        const event = await OrganizationService.getEventById(eventId);
+        const venue = await EventTicketService.getVenueTicketById(
+          new mongoose.Types.ObjectId(venueId)
+        );
+
+        const emailSelectedTickets = [
+          {
+            _id: new mongoose.Types.ObjectId(venueId),
+            eventMainBanner: event?.mainImage,
+            eventId: eventId,
+            eventName: event?.name,
+            date: venue?.date,
+            venue: venue?.venue,
+            address: venue?.address,
+            ticketTypes,
+          },
+        ];
+
+        await UserService.sendTicketConfirmationEmail(
+          emailSelectedTickets,
+          user
+        );
+      } catch (err: any) {
+        console.error("Background task failed:", err.message);
+      }
+    });
   };
 }
 

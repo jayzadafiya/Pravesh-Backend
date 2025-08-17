@@ -1,0 +1,221 @@
+<!-- templates/auth-verification.html -->
+<body
+  style="
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+  "
+>
+  <table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    width="100%"
+    style="background-color: #f8f9fa"
+  >
+    <tr>
+      <td style="padding: 40px 20px">
+        <table
+          role="presentation"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          width="100%"
+          style="
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          "
+        >
+          <tr>
+            <td
+              style="
+                background: linear-gradient(
+                  135deg,
+                  #e63a4a 0%,
+                  #b73555 50%,
+                  #ff5e7a 100%
+                );
+                padding: 40px 30px;
+                text-align: center;
+              "
+            >
+              <img
+                src="https://res.cloudinary.com/dpzd6gkt1/image/upload/v1752313723/pravesh_round-white_logo_xwwn4h.png"
+                alt="Prevesh"
+                width="100"
+                height="100"
+                style="display: block; margin: 0 auto; border-radius: 50%"
+              />
+
+              <h1
+                style="
+                  margin: 0;
+                  color: #ffffff;
+                  font-size: 32px;
+                  font-weight: 700;
+                "
+              >
+                Prevesh
+              </h1>
+              <p
+                style="
+                  margin: 8px 0 0 0;
+                  color: rgba(255, 255, 255, 0.9);
+                  font-size: 16px;
+                  font-weight: 500;
+                "
+              >
+                Discover, Host, and Celebrate
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 50px 40px 20px 40px">
+              <h2 style="text-align: center; color: #2d3748; font-size: 28px">
+                Welcome to Prevesh! 🎉
+              </h2>
+              <p style="text-align: center; color: #4a5568; font-size: 18px">
+                We're excited to have you join our vibrant community of event
+                enthusiasts!
+              </p>
+              <p style="text-align: center; color: #718096; font-size: 16px">
+                To secure your account, please verify your email by clicking the
+                button below:
+              </p>
+
+              <div style="text-align: center; margin: 30px 0">
+                <a
+                  href="{{verifyUrl}}"
+                  style="
+                    display: inline-block;
+                    background: linear-gradient(
+                      135deg,
+                      #e63a4a 0%,
+                      #b73555 100%
+                    );
+                    color: #fff;
+                    text-decoration: none;
+                    padding: 9px 20px;
+                    border-radius: 50px;
+                    font-size: 18px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                  "
+                  >✉️ Verify Email</a
+                >
+              </div>
+
+              <div
+                style="
+                  background-color: #fff5f5;
+                  border-radius: 12px;
+                  padding: 20px;
+                  text-align: center;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    color: #4a5568;
+                    font-size: 16px;
+                    font-weight: 600;
+                  "
+                >
+                  ⏰ This link is only valid for 5 minutes.
+                </p>
+                <p style="margin: 8px 0 0; color: #a0aec0; font-size: 14px">
+                  Please verify your email promptly.
+                </p>
+              </div>
+
+              <div
+                style="
+                  background-color: #f7fafc;
+                  border-radius: 8px;
+                  padding: 10px;
+                  margin: 30px 0;
+                "
+              >
+                <p style="color: #4a5568; font-size: 14px; font-weight: 600">
+                  Having trouble?
+                </p>
+                <p style="color: #718096; font-size: 14px">
+                  If the button doesn't work, copy and paste this link into your
+                  browser:
+                </p>
+                <p
+                  style="
+                    word-break: break-all;
+                    background-color: #edf2f7;
+                    padding: 8px;
+                    border-radius: 6px;
+                    font-family: monospace;
+                    font-size: 13px;
+                    color: #2d3748;
+                  "
+                >
+                  {{verifyUrl}}
+                </p>
+              </div>
+
+              <div style="text-align: center; margin-top: 40px">
+                <p style="color: #718096; font-size: 15px">
+                  Once verified, you'll receive a confirmation of your booked
+                  tickets will be sent to this email address. You will also
+                  receive important updates, reminders, and other event-related
+                  information here.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td
+              style="
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+                padding: 40px 30px;
+                text-align: center;
+              "
+            >
+              <p style="color: #ffffff; font-size: 18px; font-weight: 600">
+                Thank you for being part of Prevesh! 🚀
+              </p>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px">
+                We can't wait to see what amazing events you'll discover and
+                create.
+              </p>
+              <p
+                style="
+                  margin-top: 20px;
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                "
+              >
+                © 2025 Prevesh. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p
+          style="
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 16px;
+          "
+        >
+          If you didn't create an account with Prevesh, you can safely ignore
+          this email.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>

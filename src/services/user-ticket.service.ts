@@ -7,10 +7,7 @@ class userTicketService {
     const tickets: any = await UserTicketModel.find({
       user: userId,
     })
-      .populate({
-        path: "event",
-        select: "name startDate",
-      })
+      .populate("event")
       .populate({
         path: "venue",
         select: "venue ticketTypes",
@@ -33,6 +30,10 @@ class userTicketService {
           _id: ticket.event?._id,
           name: ticket.event?.name,
           startDate: ticket.event?.startDate,
+          endDate: ticket.event?.endDate,
+          posterImage: ticket.event?.mainImage,
+          description: ticket.event?.description,
+          duration: ticket.event?.duration,
         },
         venue: {
           _id: venue?._id,

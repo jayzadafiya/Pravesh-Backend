@@ -1,0 +1,249 @@
+<body
+  style="
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+  "
+>
+  <table
+    role="presentation"
+    width="100%"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    style="background-color: #f8f9fa"
+  >
+    <tr>
+      <td style="padding: 30px 10px">
+        <table
+          role="presentation"
+          width="100%"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          style="
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          "
+        >
+          <!-- Header -->
+          <tr>
+            <td
+              style="
+                background: linear-gradient(
+                  135deg,
+                  #e63a4a 0%,
+                  #b73555 50%,
+                  #ff5e7a 100%
+                );
+                padding: 40px 30px;
+                text-align: center;
+              "
+            >
+              <img
+                src="https://res.cloudinary.com/dpzd6gkt1/image/upload/v1752313723/pravesh_round-white_logo_xwwn4h.png"
+                alt="Prevesh"
+                width="90"
+                height="90"
+                style="display: block; margin: 0 auto; border-radius: 50%"
+              />
+              <h1
+                style="
+                  margin: 10px 0 0;
+                  color: #ffffff;
+                  font-size: 28px;
+                  font-weight: 700;
+                "
+              >
+                Prevesh
+              </h1>
+              <p
+                style="
+                  margin: 4px 0 0;
+                  color: rgba(255, 255, 255, 0.9);
+                  font-size: 15px;
+                "
+              >
+                Discover, Host, and Celebrate
+              </p>
+            </td>
+          </tr>
+
+          <!-- Event Banner -->
+          <tr>
+            <td style="padding: 20px 20px 0 20px">
+              <img
+                src="{{eventMainBanner}}"
+                alt="Event Banner"
+                style="
+                  width: 100%;
+                  border-radius: 8px;
+                  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                  max-height: 300px;
+                  object-fit: cover;
+                "
+              />
+            </td>
+          </tr>
+
+          <!-- Ticket Info -->
+          <tr>
+            <td style="padding-bottom: 10px">
+              <h2
+                style="
+                  text-align: center;
+                  color: #2d3748;
+                  font-size: 24px;
+                  margin-top: 15px;
+                  margin-bottom: 10px;
+                "
+              >
+                🎟️ Ticket Confirmed!
+              </h2>
+              <p
+                style="
+                  text-align: center;
+                  color: #4a5568;
+                  font-size: 16px;
+                  white-space: nowrap;
+                "
+              >
+                Thank you for booking with <strong>Prevesh</strong>.
+              </p>
+              <p
+                style="
+                  text-align: center;
+                  color: #4a5568;
+                  font-size: 16px;
+                  margin: -10px 0 24px;
+                "
+              >
+                Your ticket details are below:
+              </p>
+
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  font-size: 15px;
+                  color: #2d3748;
+                  padding: 16px;
+                  background-color: #edf2f7;
+                "
+              >
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 140px">
+                    <strong>Event:</strong>
+                  </td>
+                  <td style="padding: 8px 0; white-space: normal">
+                    {{eventName}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 140px">
+                    <strong>Date:</strong>
+                  </td>
+                  <td style="padding: 8px 0; white-space: normal">
+                    {{eventDate}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 140px">
+                    <strong>Time:</strong>
+                  </td>
+                  <td style="padding: 8px 0; white-space: normal">
+                    {{eventTime}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 140px">
+                    <strong>Venue:</strong>
+                  </td>
+                  <td style="padding: 8px 0; white-space: normal">
+                    {{venueName}}, {{venueAddress}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 140px">
+                    <strong>Tickets: </strong>
+                  </td>
+                  <td style="padding: 8px 0; white-space: normal">
+                    {{ticketCount}} Tickets
+                  </td>
+                </tr>
+              </table>
+
+              <!-- QR Code -->
+              <div style="text-align: center; margin: 30px 0">
+                <p style="font-weight: 600; font-size: 16px; color: #2d3748">
+                  Show this QR code at entry:
+                </p>
+                <img
+                  src="{{qrCodeUrl}}"
+                  alt="QR Code"
+                  width="150"
+                  height="150"
+                  style="
+                    display: block;
+                    margin: 0 auto;
+                    background: #f7fafc;
+                    padding: 12px;
+                    border-radius: 16px;
+                    border: 1px solid #e2e8f0;
+                  "
+                />
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td
+              style="
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+                padding: 10px 0;
+                text-align: center;
+                white-space: nowrap;
+              "
+            >
+              <p style="color: #ffffff; font-size: 17px; font-weight: 600">
+                Thank you for choosing Prevesh! 🚀
+              </p>
+              <p style="color: rgba(255, 255, 255, 0.85); font-size: 14px">
+                Enjoy the show and make unforgettable memories.
+              </p>
+              <p
+                style="
+                  margin-top: 10px;
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                "
+              >
+                © 2025 Prevesh. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Legal Note -->
+        <p
+          style="
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 16px;
+          "
+        >
+          If you didn’t book this ticket, please ignore this email.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
