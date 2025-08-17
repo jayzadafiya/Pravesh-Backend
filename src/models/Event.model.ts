@@ -70,6 +70,13 @@ const EventSchema: Schema = new Schema(
         order: { type: Number, required: true },
       },
     ],
+    partners: [
+      {
+        name: { type: String, required: true },
+        profileImage: { type: String, required: true },
+        order: { type: Number, required: true },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -40,16 +40,20 @@ organizationRouter.post(
 
 organizationRouter.put(
   "/event-artist/:eventId",
-  protect,
   upload.single("profileImage"),
   OrganizationController.updateOrCreateArtist
 );
 
 organizationRouter.put(
   "/event-sponsors/:eventId",
-  protect,
   upload.single("profileImage"),
   OrganizationController.updateOrCreateSponsors
+);
+
+organizationRouter.put(
+  "/event-partners/:eventId",
+  upload.single("profileImage"),
+  OrganizationController.updateOrCreatePartners
 );
 
 organizationRouter.patch(
@@ -70,6 +74,11 @@ organizationRouter.delete(
 organizationRouter.delete(
   "/event-sponsors/:eventId/:sponsorId",
   AdminEventController.removeSponsorById as any
+);
+
+organizationRouter.delete(
+  "/event-partners/:eventId/:partnerId",
+  AdminEventController.removePartnerById as any
 );
 
 export default organizationRouter;

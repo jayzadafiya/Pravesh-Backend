@@ -77,7 +77,7 @@ class organizationService {
   upsertEntity = async (
     eventId: string,
     entity: { name: string; profileImage: string; order: number },
-    type: "artists" | "sponsors"
+    type: "artists" | "sponsors" | "partners"
   ) => {
     // Use admin method for entity updates (admins can update expired events)
     const event = await this.getEventByIdAdmin(eventId);
