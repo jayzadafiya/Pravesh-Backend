@@ -1,9 +1,15 @@
 import moment from "moment";
-import { getAll } from "../../utils/helper";
+import { getAll, getOne } from "../../utils/helper";
 import EventModel from "../../models/Event.model";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
+import { IEvent } from "../../interfaces/event.interface";
 
 class adminEventService {
+  getEvent = async (id: string): Promise<IEvent | null> => {
+    console.log("Fetching event with ID:", id);
+    return await getOne(EventModel, new mongoose.Types.ObjectId(id));
+  };
+
   getEventList = async () => {
     const events = await getAll(EventModel);
     const now = moment();
@@ -36,15 +42,17 @@ class adminEventService {
     return updatedEvents;
   };
 
-  removeArtistAndSponsorById = async (
+  removeEntityById = async (
     eventId: mongoose.Types.ObjectId,
     profile: mongoose.Types.ObjectId,
-    type: "artist" | "sponsor"
+    type: "artist" | "sponsor" | "partner"
   ) => {
     const update =
       type === "artist"
         ? { $pull: { artists: { _id: profile } } }
-        : { $pull: { sponsors: { _id: profile } } };
+        : type === "sponsor"
+        ? { $pull: { sponsors: { _id: profile } } }
+        : { $pull: { partners: { _id: profile } } };
     const event = await EventModel.findOneAndUpdate({ _id: eventId }, update, {
       new: true,
     });

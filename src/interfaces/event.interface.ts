@@ -12,6 +12,12 @@ export interface ISponsor {
   order: number;
 }
 
+export interface IPartner {
+  name: string;
+  profileImage: string;
+  order: number;
+}
+
 export interface IEvent extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -30,4 +36,6 @@ export interface IEvent extends Document {
   updatedAt?: Date;
   artists?: IArtist[];
   sponsors?: ISponsor[];
+  partners?: IPartner[];
+  status?: "upcoming" | "ongoing" | "completed";
 }

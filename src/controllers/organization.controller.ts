@@ -111,7 +111,7 @@ class organizationController {
   private async upsertEntity(
     req: Request,
     res: Response,
-    type: "artist" | "sponsor"
+    type: "artist" | "sponsor" | "partner"
   ) {
     try {
       const { eventId } = req.params;
@@ -144,6 +144,12 @@ class organizationController {
           payload,
           "artists"
         );
+      } else if (type === "partner") {
+        updatedList = await OrganizationService.upsertEntity(
+          eventId,
+          payload,
+          "partners"
+        );
       } else {
         updatedList = await OrganizationService.upsertEntity(
           eventId,
@@ -156,7 +162,11 @@ class organizationController {
         message: `${
           type[0].toUpperCase() + type.slice(1)
         } added/updated successfully`,
-        [type === "artist" ? "artists" : "sponsors"]: updatedList,
+        [type === "artist"
+          ? "artists"
+          : type === "partner"
+          ? "partners"
+          : "sponsors"]: updatedList,
       });
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
@@ -169,6 +179,10 @@ class organizationController {
 
   updateOrCreateSponsors = async (req: Request, res: Response) => {
     return this.upsertEntity(req, res, "sponsor");
+  };
+
+  updateOrCreatePartners = async (req: Request, res: Response) => {
+    return this.upsertEntity(req, res, "partner");
   };
 }
 

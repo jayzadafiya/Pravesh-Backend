@@ -17,6 +17,7 @@ organizationRouter.get(
 );
 
 organizationRouter.get("/get-event/:slug", OrganizationController.getEvent);
+organizationRouter.get("/event/:id", AdminEventController.getEvent);
 
 organizationRouter.get("/get-event-list", AdminEventController.getAllEvents);
 
@@ -29,7 +30,6 @@ organizationRouter.post(
 
 organizationRouter.post(
   "/create-event",
-  protect,
   upload.fields([
     { name: "posterImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
@@ -40,21 +40,24 @@ organizationRouter.post(
 
 organizationRouter.put(
   "/event-artist/:eventId",
-  protect,
   upload.single("profileImage"),
   OrganizationController.updateOrCreateArtist
 );
 
 organizationRouter.put(
   "/event-sponsors/:eventId",
-  protect,
   upload.single("profileImage"),
   OrganizationController.updateOrCreateSponsors
 );
 
+organizationRouter.put(
+  "/event-partners/:eventId",
+  upload.single("profileImage"),
+  OrganizationController.updateOrCreatePartners
+);
+
 organizationRouter.patch(
   "/update-event/:eventId",
-  protect,
   upload.fields([
     { name: "posterImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
@@ -71,6 +74,11 @@ organizationRouter.delete(
 organizationRouter.delete(
   "/event-sponsors/:eventId/:sponsorId",
   AdminEventController.removeSponsorById as any
+);
+
+organizationRouter.delete(
+  "/event-partners/:eventId/:partnerId",
+  AdminEventController.removePartnerById as any
 );
 
 export default organizationRouter;
