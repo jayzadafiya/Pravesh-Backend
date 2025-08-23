@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IUserTicket extends Document {
-  _id: mongoose.Types.ObjectId;
+  _id: string;
   status: string;
   user: mongoose.Types.ObjectId;
   event: mongoose.Types.ObjectId;
