@@ -52,7 +52,7 @@ class cashFreeService {
 
       const returnUrl =
         CASHFREE_CONFIG.environment === "SANDBOX" &&
-        process.env.NODE_ENV === "development"
+        process.env.MAIN_ENVIRONMENT === "development"
           ? process.env.FRONTEND_URL
             ? `${process.env.FRONTEND_URL}/payment/success`
             : baseReturnUrl
@@ -60,7 +60,7 @@ class cashFreeService {
 
       const webhookUrl =
         CASHFREE_CONFIG.environment === "SANDBOX" &&
-        process.env.NODE_ENV === "development"
+        process.env.MAIN_ENVIRONMENT === "development"
           ? process.env.BACKEND_URL
             ? `${process.env.BACKEND_URL}/payment/cashfree/webhook`
             : baseWebhookUrl
