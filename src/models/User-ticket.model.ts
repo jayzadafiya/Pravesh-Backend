@@ -3,6 +3,10 @@ import { IUserTicket } from "../interfaces/user-ticket.interface";
 
 const UserTicketSchema: Schema = new Schema(
   {
+    _id: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       required: true,
