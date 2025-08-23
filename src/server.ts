@@ -326,7 +326,7 @@ async function startServer() {
         status: "OK",
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        environment: process.env.NODE_ENV || "development",
+        environment: process.env.MAIN_ENVIRONMENT || "development",
         version: process.env.npm_package_version || "1.0.0",
         memory: {
           used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
@@ -341,7 +341,7 @@ async function startServer() {
       (req: express.Request, res: express.Response) => {
         // Only allow in development or with proper authentication
         if (
-          process.env.NODE_ENV === "production" &&
+          process.env.MAIN_ENVIRONMENT === "production" &&
           !req.headers.authorization
         ) {
           res.status(401).json({ error: "Unauthorized" });
@@ -403,7 +403,9 @@ async function startServer() {
             method: req.method,
             timestamp: new Date().toISOString(),
             stack:
-              process.env.NODE_ENV === "development" ? err.stack : undefined,
+              process.env.MAIN_ENVIRONMENT === "development"
+                ? err.stack
+                : undefined,
           });
         }
 
@@ -414,7 +416,9 @@ async function startServer() {
     const PORT = process.env.PORT || 3000;
     currentServer = app.listen(PORT, () => {
       console.log(`✅ Server is running successfully on port ${PORT}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(
+        `🌍 Environment: ${process.env.MAIN_ENVIRONMENT || "development"}`
+      );
       restartCount = 0; // Reset restart count on successful start
     });
 
@@ -502,7 +506,7 @@ process.on("uncaughtException", (err) => {
   console.error("Stack:", err.stack);
 
   // Log to external monitoring service if available
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.MAIN_ENVIRONMENT === "production") {
     // TODO: Send to external logging service (e.g., Sentry, LogRocket)
     console.error("Production error logged to monitoring service");
   }
@@ -539,7 +543,7 @@ process.on("unhandledRejection", (err: any) => {
   }
 
   // Log to external monitoring service if available
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.MAIN_ENVIRONMENT === "production") {
     console.error("Production rejection logged to monitoring service");
   }
 
@@ -572,7 +576,7 @@ setInterval(() => {
   }
 
   // Log memory usage every 10 minutes in production
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.MAIN_ENVIRONMENT === "production") {
     console.log(
       `📊 Memory usage: ${Math.round(
         memUsage.heapUsed / 1024 / 1024
@@ -612,7 +616,7 @@ setInterval(() => {
   }
 
   // Log memory usage in production
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.MAIN_ENVIRONMENT === "production") {
     console.log(
       `📊 Memory usage: ${Math.round(
         memUsage.heapUsed / 1024 / 1024

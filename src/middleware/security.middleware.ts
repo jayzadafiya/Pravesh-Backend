@@ -9,7 +9,7 @@ export const validateIPAddress = (
   const clientIP = req.ip || req.connection.remoteAddress || "";
 
   // Block private IP ranges in production (except local development)
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.MAIN_ENVIRONMENT === "production") {
     const privateIPRegex = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/;
     if (privateIPRegex.test(clientIP) && !process.env.ALLOW_PRIVATE_IPS) {
       console.warn(`🚨 Private IP access blocked: ${clientIP}`);
