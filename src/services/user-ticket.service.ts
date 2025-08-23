@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import UserTicketModel from "../models/User-ticket.model";
+import { generateTicketId } from "../utils/helper-function";
 
 class userTicketService {
   getAssignTickets = async (userId: mongoose.Types.ObjectId) => {
@@ -59,9 +60,13 @@ class userTicketService {
 
     for (const venueTicket of selectedTickets) {
       for (const ticketType of venueTicket.ticketTypes) {
-        if (!ticketType._id || !ticketType.quantity) continue;
+        if (!ticketType._id || !ticketType.quantity || !ticketType.count)
+          continue;
+
+        let ticketId = generateTicketId();
 
         ticketDocs.push({
+          _id: ticketId,
           user: userId,
           event: venueTicket.eventId,
           venue: venueTicket._id,
@@ -80,7 +85,7 @@ class userTicketService {
 
   UpdateStatusAndTransaction = async (
     transactionId: mongoose.Types.ObjectId,
-    ticketId: mongoose.Types.ObjectId
+    ticketId: string
   ) => {
     return await UserTicketModel.findByIdAndUpdate(
       { _id: ticketId },

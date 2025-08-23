@@ -77,6 +77,11 @@ const EventSchema: Schema = new Schema(
         order: { type: Number, required: true },
       },
     ],
+    eventPassword: {
+      type: String,
+      required: true,
+      select: false,
+    },
   },
   {
     timestamps: true,

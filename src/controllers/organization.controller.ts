@@ -4,6 +4,7 @@ import { OrganizationService } from "../services/organization.service";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { CloudinaryService } from "../services/cloudinary.service";
 import { BadRequestException } from "../utils/exceptions";
+import { generateMixedRandomCode } from "../utils/helper-function";
 
 class organizationController {
   getEventBanner = async (req: Request, res: Response) => {
@@ -68,6 +69,7 @@ class organizationController {
       if (mainImage) data.mainImage = mainImage;
       const event = await OrganizationService.createEvent({
         ...data,
+        eventPassword: generateMixedRandomCode(),
         slug: slugify(data?.name, { lower: true, strict: true }),
       });
       res.status(201).send(event);
