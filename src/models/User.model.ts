@@ -77,7 +77,7 @@ const UserSchema: Schema = new Schema(
     toJSON: {
       virtuals: true,
       versionKey: false,
-      transform: function (doc, ret) {
+      transform: function (doc, ret: any) {
         ret.id = ret._id;
         delete ret._id;
       },
@@ -85,7 +85,7 @@ const UserSchema: Schema = new Schema(
     toObject: {
       virtuals: true,
       versionKey: false,
-      transform: function (doc, ret) {
+      transform: function (doc, ret: any) {
         ret.id = ret._id;
         delete ret._id;
       },
