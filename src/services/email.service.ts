@@ -3,6 +3,7 @@ import fs from "fs";
 import { transporter } from "../config/email.config";
 import { BadRequestException } from "../utils/exceptions";
 import moment from "moment";
+import { IOrganizerRegistration } from "../interfaces/organizer-registration.interface";
 
 class emailService {
   sendAuthEmail = async (to: string, token: string) => {
@@ -73,6 +74,237 @@ class emailService {
       console.error(`Error sending email: ${error.message}`);
       throw new BadRequestException(`Failed to send email: ${error.message}`);
     }
+  };
+
+  sendAdminNotificationEmail = async (registration: IOrganizerRegistration) => {
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">New Event Organizer Registration</h2>
+        
+        <p>A new event organizer has submitted a registration form.</p>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Organizer Details:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><strong>Company/Organizer:</strong> ${
+              registration.organizerName
+            }</li>
+            <li><strong>Contact Person:</strong> ${
+              registration.contactPersonName
+            }</li>
+            <li><strong>Email:</strong> ${registration.emailAddress}</li>
+            <li><strong>Phone:</strong> ${registration.mobileNumber}</li>
+            ${
+              registration.website
+                ? `<li><strong>Website:</strong> ${registration.website}</li>`
+                : ""
+            }
+          </ul>
+        </div>
+        
+        <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Event Details:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><strong>Event Name:</strong> ${registration.eventName}</li>
+            <li><strong>Event Type:</strong> ${registration.eventType}</li>
+            <li><strong>Date & Time:</strong> ${new Date(
+              registration.eventDate
+            ).toLocaleDateString()} at ${registration.eventTime}</li>
+            <li><strong>Venue:</strong> ${registration.venueName}</li>
+            <li><strong>Address:</strong> ${registration.venueAddress}</li>
+            <li><strong>City:</strong> ${registration.city}</li>
+            <li><strong>Expected Audience:</strong> ${
+              registration.expectedAudienceSize
+            }</li>
+          </ul>
+        </div>
+        
+        ${
+          registration.preferredContactDate || registration.preferredContactTime
+            ? `
+        <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Contact Preferences:</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${
+              registration.preferredContactDate
+                ? `<li><strong>Preferred Date:</strong> ${new Date(
+                    registration.preferredContactDate
+                  ).toLocaleDateString()}</li>`
+                : ""
+            }
+            ${
+              registration.preferredContactTime
+                ? `<li><strong>Preferred Time:</strong> ${registration.preferredContactTime}</li>`
+                : ""
+            }
+          </ul>
+        </div>
+        `
+            : ""
+        }
+        
+        <p style="margin-top: 30px;">
+          <strong>Next Steps:</strong> Please assign this registration to a team member and contact the organizer within 24 hours.
+        </p>
+        
+        <p>
+          <a href="${process.env.ADMIN_URL}/organizer-registrations/${
+      registration._id
+    }" 
+             style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            View in Admin Panel
+          </a>
+        </p>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: process.env.ADMIN_EMAIL || "admin@pravesh.events",
+      subject: `New Registration: ${registration.eventName} by ${registration.organizerName}`,
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+  };
+
+  sendStatusUpdateEmail = async (
+    registration: IOrganizerRegistration,
+    status: string
+  ) => {
+    let statusMessage = "";
+    let statusColor = "#333";
+
+    switch (status) {
+      case "contacted":
+        statusMessage =
+          "Our team has been in touch and is reviewing your event details.";
+        statusColor = "#ffc107";
+        break;
+      case "in_progress":
+        statusMessage =
+          "Your event is being set up on our platform. We'll notify you once it's live.";
+        statusColor = "#17a2b8";
+        break;
+      case "completed":
+        statusMessage =
+          "Your event has been successfully listed on Pravesh Events! You can now start selling tickets.";
+        statusColor = "#28a745";
+        break;
+      case "rejected":
+        statusMessage =
+          "Unfortunately, we cannot proceed with your event listing at this time. Our team will contact you with more details.";
+        statusColor = "#dc3545";
+        break;
+      default:
+        return; // Don't send email for pending status
+    }
+
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: ${statusColor};">Event Registration Update - ${
+      registration.eventName
+    }</h2>
+        
+        <p>Dear ${registration.contactPersonName},</p>
+        
+        <p>We have an update regarding your event registration for "<strong>${
+          registration.eventName
+        }</strong>".</p>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${statusColor};">
+          <h3 style="margin-top: 0; color: ${statusColor};">Status: ${status
+      .toUpperCase()
+      .replace("_", " ")}</h3>
+          <p style="margin-bottom: 0;">${statusMessage}</p>
+        </div>
+        
+        ${
+          registration.notes
+            ? `
+        <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Additional Notes:</h3>
+          <p style="margin-bottom: 0;">${registration.notes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>If you have any questions, please don't hesitate to contact us:</p>
+        <ul>
+          <li><strong>Email:</strong> info@pravesh.events</li>
+          <li><strong>Phone:</strong> +91 9023658437</li>
+        </ul>
+        
+        <p>Thank you for choosing Pravesh Events!</p>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: registration.emailAddress,
+      subject: `Update: ${registration.eventName} - ${status
+        .replace("_", " ")
+        .toUpperCase()}`,
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+  };
+
+  sendConfirmationEmail = async (registration: IOrganizerRegistration) => {
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Registration Received - Pravesh Events</h2>
+        
+        <p>Dear ${registration.contactPersonName},</p>
+        
+        <p>Thank you for your interest in listing your event "<strong>${
+          registration.eventName
+        }</strong>" on Pravesh Events platform.</p>
+        
+        <p>We have received your registration details and our team will review your submission. You can expect to hear from us within 24 hours.</p>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #333;">Event Details Summary:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><strong>Event Name:</strong> ${registration.eventName}</li>
+            <li><strong>Event Type:</strong> ${registration.eventType}</li>
+            <li><strong>Date:</strong> ${new Date(
+              registration.eventDate
+            ).toLocaleDateString()}</li>
+            <li><strong>Venue:</strong> ${registration.venueName}, ${
+      registration.city
+    }</li>
+            <li><strong>Expected Audience:</strong> ${
+              registration.expectedAudienceSize
+            }</li>
+          </ul>
+        </div>
+        
+        <p>In the meantime, if you have any questions, please don't hesitate to contact us:</p>
+        <ul>
+          <li><strong>Email:</strong> info@pravesh.events</li>
+          <li><strong>Phone:</strong> +91 9023658437</li>
+          <li><strong>Website:</strong> www.pravesh.events</li>
+        </ul>
+        
+        <p>Thank you for choosing Pravesh Events!</p>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          This is an automated email. Please do not reply to this email address.
+        </p>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: registration.emailAddress,
+      subject: `Registration Received - ${registration.eventName}`,
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
   };
 }
 
