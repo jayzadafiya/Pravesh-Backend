@@ -117,7 +117,6 @@ export const loginContributor = async (
       message: "Login successful",
       data: {
         contributor: result.contributor,
-        event: result.event,
         eventAccess: result.eventAccess,
       },
     });

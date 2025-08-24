@@ -100,7 +100,6 @@ export class ContributorService {
     eventPassword: string
   ): Promise<{
     contributor: IContributor;
-    event: any;
     eventAccess: any;
   }> => {
     const contributor = await Contributor.findOne({ email });
@@ -131,7 +130,7 @@ export class ContributorService {
 
     return {
       contributor,
-      event: matchedEvent,
+      // event: matchedEvent,
       eventAccess: matchedEventAccess,
     };
   };
