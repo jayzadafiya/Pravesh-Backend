@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ICartEventTicket } from "../interfaces/venue-ticket.interface";
 import UserTicketModel from "../models/User-ticket.model";
+import TransactionModel from "../models/Transaction.model";
 import { generateTicketId } from "../utils/helper-function";
 
 class userTicketService {
@@ -12,6 +13,10 @@ class userTicketService {
       .populate({
         path: "venue",
         select: "venue ticketTypes",
+      })
+      .populate({
+        path: "transaction",
+        select: "paymentId",
       })
       .lean();
 
@@ -27,6 +32,7 @@ class userTicketService {
         quantity: ticket.quantity,
         price: ticket.price,
         createdAt: ticket.createdAt,
+        paymentId: ticket.transaction?.paymentId || null,
         event: {
           _id: ticket.event?._id,
           name: ticket.event?.name,
