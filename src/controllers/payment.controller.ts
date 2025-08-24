@@ -334,7 +334,36 @@ class paymentController {
             )
           );
 
-          await UserService.sendTicketConfirmationEmail(selectedTickets, user);
+          const createdTickets = await UserTicketService.getAssignTickets(
+            new mongoose.Types.ObjectId(userId)
+          );
+
+          const orderTickets = createdTickets.filter(
+            (ticket: any) =>
+              ticket.paymentId ===
+              (verifiedOrderData.cf_order_id || referenceId)
+          );
+
+          const updatedSelectedTickets = selectedTickets.map(
+            (ticketGroup: any) => {
+              const firstTicket = orderTickets.find(
+                (ticket: any) =>
+                  ticket.venue._id.toString() === ticketGroup._id.toString()
+              );
+
+              return {
+                ...ticketGroup,
+                ticketId: firstTicket?._id || "N/A",
+                paymentId:
+                  verifiedOrderData.cf_order_id || referenceId || "N/A",
+              };
+            }
+          );
+
+          await UserService.sendTicketConfirmationEmail(
+            updatedSelectedTickets,
+            user
+          );
 
           await UserService.removeCartItem(userId);
 

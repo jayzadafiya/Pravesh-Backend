@@ -198,6 +198,8 @@ class userService {
           venueName: ticketGroup.venue,
           address: ticketGroup.address,
           ticketCount,
+          ticketId: ticketGroup.ticketId,
+          paymentId: ticketGroup.paymentId,
         };
         console.log(emailPayload);
         await EmailService.sendTicketConfirmationEmail(emailPayload, {
