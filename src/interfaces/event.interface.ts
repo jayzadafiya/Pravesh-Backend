@@ -32,6 +32,7 @@ export interface IEvent extends Document {
   mainImage: string;
   isPublished: boolean;
   isDeleted: boolean;
+  eventPassword: string;
   createdAt?: Date;
   updatedAt?: Date;
   artists?: IArtist[];
