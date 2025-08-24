@@ -314,6 +314,92 @@ class emailService {
 
     await transporter.sendMail(mailOptions);
   };
+
+  sendContributorVerificationEmail = async (
+    email: string,
+    event: any,
+    verificationToken: string
+  ) => {
+    const verificationLink = `${process.env.ADMIN_FRONTEND_URL}/contributor/verify?token=${verificationToken}&email=${email}`;
+
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa; padding: 20px;">
+        <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; font-size: 28px; margin: 0 0 10px 0; font-weight: 700;">
+              Welcome to ${event.name}
+            </h1>
+            <h2 style="color: #667eea; font-size: 20px; margin: 0; font-weight: 600;">
+              Contributor Access
+            </h2>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
+            <p style="margin: 0; font-size: 16px; color: #2c3e50; line-height: 1.6;">
+              You have been added as a contributor for the event: <strong>${event.name}</strong>
+            </p>
+          </div>
+          
+          <p style="font-size: 16px; color: #5a6c7d; line-height: 1.6; margin: 20px 0;">
+            Please click the button below to verify your email and activate your contributor access:
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" style="
+              display: inline-block;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              text-decoration: none;
+              padding: 15px 30px;
+              border-radius: 8px;
+              font-size: 16px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            ">
+              ✉️ Verify Email
+            </a>
+          </div>
+          
+          <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #2c3e50; font-weight: 600;">
+              If the button doesn't work, copy and paste this link:
+            </p>
+            <p style="margin: 0; font-size: 14px; color: #667eea; word-break: break-all;">
+              ${verificationLink}
+            </p>
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; font-size: 14px; color: #856404; font-weight: 600;">
+              📋 Next Steps:
+            </p>
+            <p style="margin: 10px 0 0 0; font-size: 14px; color: #856404; line-height: 1.5;">
+              After verification, you can use your email along with the event password to login as a contributor and access the event management features.
+            </p>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          
+          <div style="text-align: center;">
+            <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+              This email was sent by Pravesh Events. If you have any questions, please contact the event administrator.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: `🎉 Contributor Access - ${event.name}`,
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+  };
 }
 
 export const EmailService = new emailService();
