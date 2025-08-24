@@ -16,3 +16,16 @@ export function generateMixedRandomCode(): string {
     .sort(() => Math.random() - 0.5)
     .join("");
 }
+
+export function generateTicketId(): string {
+  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const allCharacters = uppercase + numbers;
+
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += allCharacters[Math.floor(Math.random() * allCharacters.length)];
+  }
+
+  return result;
+}
