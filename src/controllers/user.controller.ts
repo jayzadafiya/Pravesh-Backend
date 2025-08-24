@@ -268,6 +268,18 @@ class userController {
           new mongoose.Types.ObjectId(venueId)
         );
 
+        const createdTickets = await UserTicketService.getAssignTickets(
+          new mongoose.Types.ObjectId(userId)
+        );
+
+        const eventTickets = createdTickets.filter(
+          (ticket: any) => ticket.event._id.toString() === eventId
+        );
+
+        const firstTicket = eventTickets[0];
+        const ticketId = firstTicket?._id || "N/A";
+        const paymentId = firstTicket?.paymentId || "FREE-TICKET";
+
         const emailSelectedTickets = [
           {
             _id: new mongoose.Types.ObjectId(venueId),
@@ -278,6 +290,8 @@ class userController {
             venue: venue?.venue,
             address: venue?.address,
             ticketTypes,
+            ticketId: ticketId,
+            paymentId: paymentId,
           },
         ];
 

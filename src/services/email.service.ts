@@ -61,6 +61,14 @@ class emailService {
         data?.ticketCount || 0
       );
       htmlTemplate = htmlTemplate.replace(/{{qrCodeUrl}}/g, user.qrCode);
+      htmlTemplate = htmlTemplate.replace(
+        /{{ticketId}}/g,
+        data?.ticketId || "N/A"
+      );
+      htmlTemplate = htmlTemplate.replace(
+        /{{transactionId}}/g,
+        data?.paymentId || data?.transactionId || "N/A"
+      );
 
       const info = await transporter.sendMail({
         from: `"Prevesh Events" <${process.env.PRAVESH_INFO_EMAIL}>`,
