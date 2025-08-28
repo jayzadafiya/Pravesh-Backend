@@ -11,9 +11,15 @@ const UserTicketSchema: Schema = new Schema(
       type: String,
       required: true,
       default: "Pending",
-      enum: ["Pending", "Confirmed", "Cancelled", "Refunded"],
+      enum: ["Pending", "Confirmed", "Cancelled", "Refunded", "Transferred"],
     },
     user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    mainUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -42,9 +48,31 @@ const UserTicketSchema: Schema = new Schema(
       ref: "Transaction",
       index: true,
     },
-    quantity: { type: Number, required: true },
+    quantity: { type: Number, required: true, default: 1 },
     price: { type: Number, required: true },
     checkedInAt: { type: Date },
+    isTransferred: { type: Boolean, default: false },
+    transferHistory: [
+      {
+        fromUser: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        toUser: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        transferredAt: {
+          type: Date,
+          default: Date.now,
+        },
+        reason: {
+          type: String,
+          enum: ["Split", "Share", "Transfer"],
+          default: "Transfer",
+        },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -53,5 +81,7 @@ const UserTicketSchema: Schema = new Schema(
 
 UserTicketSchema.index({ user: 1, event: 1 });
 UserTicketSchema.index({ transaction: 1, status: 1 });
+UserTicketSchema.index({ mainUser: 1, status: 1 });
+UserTicketSchema.index({ isTransferred: 1 });
 
 export default mongoose.model<IUserTicket>("UserTicket", UserTicketSchema);
