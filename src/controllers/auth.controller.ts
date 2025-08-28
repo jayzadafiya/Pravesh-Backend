@@ -8,6 +8,7 @@ import { AwsSNSService } from "../services/awsSNS.service";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
 import { EmailService } from "../services/email.service";
+import { WhatsappService } from "../services/whatsapp.service";
 class authController {
   upsetUser = async (req: Request, res: Response) => {
     try {
@@ -43,10 +44,12 @@ class authController {
       user.save();
 
       if (process.env.MAIN_ENVIRONMENT !== "development") {
-        await AwsSNSService.sendOtpSMS(
-          `+${phonePrefix}${phone}`,
-          OTP.toString()
-        );
+        // await AwsSNSService.sendOtpSMS(
+        //   `+${phonePrefix}${phone}`,
+        //   OTP.toString()
+        // );
+
+        await WhatsappService.sendOTPMessage(OTP, phone);
       }
       res.status(200).json({
         sendOtp: true,
