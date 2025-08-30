@@ -4,27 +4,117 @@ export const securityConfig = {
   // Rate limiting configurations
   rateLimiting: {
     general: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
+      windowMs: 3 * 60 * 1000,
+      max: 200,
+      message: {
+        error: "Too many requests, please try again later.",
+        retryAfter: "3 minute",
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req: any) => {
+        const { ipKeyGenerator } = require("express-rate-limit");
+
+        if (req.user?.id) {
+          return `general-user-${req.user.id}`;
+        }
+
+        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID || req.get("X-Session-ID") || "no-session";
+        const authorization = req.get("Authorization") || "no-auth";
+
+        return `general-${baseKey}-${userAgent.substring(
+          0,
+          15
+        )}-${sessionId.substring(0, 8)}-${authorization.substring(0, 10)}`;
+      },
+    },
+    api: {
+      windowMs: 2 * 60 * 1000,
       max: 100,
       message: {
-        error: "Too many requests from this IP, please try again later.",
-        retryAfter: "15 minutes",
+        error: "Too many API requests, please try again later.",
+        retryAfter: "2 minute",
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req: any) => {
+        if (req.user?.id) {
+          return `api-user-${req.user.id}`;
+        }
+
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID ||
+          req.get("X-Session-ID") ||
+          Math.random().toString(36).substr(2, 9);
+        const authorization = req.get("Authorization") || "no-auth";
+
+        return `api-session-${userAgent.substring(0, 15)}-${sessionId.substring(
+          0,
+          10
+        )}-${authorization.substring(0, 10)}`;
       },
     },
     auth: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
+      windowMs: 2 * 60 * 1000,
       max: 10,
       message: {
         error: "Too many authentication attempts, please try again later.",
-        retryAfter: "15 minutes",
+        retryAfter: "2 minutes",
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req: any) => {
+        const { ipKeyGenerator } = require("express-rate-limit");
+
+        const identifier =
+          req.body?.email ||
+          req.body?.username ||
+          req.body?.phone ||
+          "no-identifier";
+
+        if (identifier !== "no-identifier") {
+          return `auth-identifier-${identifier.substring(0, 25)}`;
+        }
+        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID || req.get("X-Session-ID") || "no-session";
+        return `auth-${baseKey}-${userAgent.substring(
+          0,
+          10
+        )}-${sessionId.substring(0, 8)}`;
       },
     },
     payment: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 10, // requests per window
+      windowMs: 1 * 60 * 1000,
+      max: 20,
       message: {
-        error: "Too many payment requests, please try again later.",
-        retryAfter: "5 minutes",
+        error: "Too many payment requests, please try again in a moment.",
+        retryAfter: "20 minute",
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req: any) => {
+        const { ipKeyGenerator } = require("express-rate-limit");
+
+        if (req.user?.id) {
+          return `payment-user-${req.user.id}`;
+        }
+
+        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID || req.get("X-Session-ID") || "no-session";
+        const authorization = req.get("Authorization") || "no-auth";
+
+        return `payment-${baseKey}-${userAgent.substring(
+          0,
+          15
+        )}-${sessionId.substring(0, 8)}-${authorization.substring(0, 10)}`;
       },
     },
   },
@@ -117,10 +207,50 @@ export const createRateLimiter = (config: any) => {
     windowMs: config.windowMs,
     max: config.max,
     message: config.message,
-    standardHeaders: true,
-    legacyHeaders: false,
-    skipSuccessfulRequests: false,
-    skipFailedRequests: false,
+    standardHeaders: config.standardHeaders || true,
+    legacyHeaders: config.legacyHeaders || false,
+    skipSuccessfulRequests: config.skipSuccessfulRequests || false,
+    skipFailedRequests: config.skipFailedRequests || false,
+    // Use the keyGenerator from config if provided, otherwise fall back to default IPv6-safe
+    keyGenerator:
+      config.keyGenerator ||
+      ((req: any) => {
+        const { ipKeyGenerator } = require("express-rate-limit");
+        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+
+        // Add user context if available
+        if (req.user?.id) {
+          return `${baseKey}-user-${req.user.id}`;
+        }
+
+        // In development, add additional context for better testing
+        if (process.env.MAIN_ENVIRONMENT === "development") {
+          const userAgent = req.get("User-Agent") || "unknown";
+          return `${baseKey}-${userAgent.substring(0, 15)}`;
+        }
+
+        return baseKey;
+      }),
+    // Custom handler to maintain CORS headers and proper response
+    handler: (req: any, res: any) => {
+      // Ensure CORS headers are included in rate limit responses
+      const origin = req.headers.origin;
+      if (origin) {
+        res.header("Access-Control-Allow-Origin", origin);
+        res.header("Access-Control-Allow-Credentials", "true");
+        res.header(
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        );
+        res.header(
+          "Access-Control-Allow-Headers",
+          "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        );
+      }
+
+      // Return the rate limit message
+      res.status(429).json(config.message);
+    },
   });
 };
 

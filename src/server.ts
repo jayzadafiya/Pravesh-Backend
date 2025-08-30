@@ -65,7 +65,37 @@ async function startServer() {
         crossOriginEmbedderPolicy: false, // Disable if needed for external resources
       })
     );
+    // Security: Enhanced CORS configuration (MUST be before rate limiting)
+    app.use(
+     cors({
+        origin: function (origin, callback) {
+          // Allow requests with no origin (mobile apps, curl, etc.)
+          if (!origin) return callback(null, true);
 
+          // Check if origin is in allowed list or matches regex patterns
+          const isAllowed = securityConfig.cors.allowedOrigins.some(
+            (allowedOrigin) => {
+              if (typeof allowedOrigin === "string") {
+                return allowedOrigin === origin;
+              }
+              return allowedOrigin.test(origin);
+            }
+          );
+
+          if (isAllowed) {
+            callback(null, true);
+          } else {
+            console.warn(`🚫 CORS blocked origin: ${origin}`);
+            callback(new Error("Not allowed by CORS"));
+          }
+        },
+        credentials: true,
+        methods: securityConfig.cors.methods,
+        allowedHeaders: securityConfig.cors.allowedHeaders,
+        exposedHeaders: ["set-cookie"],
+        maxAge: 86400, // 24 hours
+      })
+    );
 
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
@@ -111,38 +141,6 @@ async function startServer() {
       express.urlencoded({
         extended: true,
         limit: securityConfig.bodyLimits.urlencoded,
-      })
-    );
-
-    // Security: Enhanced CORS configuration
-    app.use(
-      cors({
-        origin: function (origin, callback) {
-          // Allow requests with no origin (mobile apps, curl, etc.)
-          if (!origin) return callback(null, true);
-
-          // Check if origin is in allowed list or matches regex patterns
-          const isAllowed = securityConfig.cors.allowedOrigins.some(
-            (allowedOrigin) => {
-              if (typeof allowedOrigin === "string") {
-                return allowedOrigin === origin;
-              }
-              return allowedOrigin.test(origin);
-            }
-          );
-
-          if (isAllowed) {
-            callback(null, true);
-          } else {
-            console.warn(`🚫 CORS blocked origin: ${origin}`);
-            callback(new Error("Not allowed by CORS"));
-          }
-        },
-        credentials: true,
-        methods: securityConfig.cors.methods,
-        allowedHeaders: securityConfig.cors.allowedHeaders,
-        exposedHeaders: ["set-cookie"],
-        maxAge: 86400, // 24 hours
       })
     );
 
