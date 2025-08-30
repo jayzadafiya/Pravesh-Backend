@@ -4,197 +4,117 @@ export const securityConfig = {
   // Rate limiting configurations
   rateLimiting: {
     general: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 100, // 100 requests per 5 minutes
+      windowMs: 3 * 60 * 1000,
+      max: 200,
       message: {
-        error: "Too many requests from this IP, please try again later.",
-        retryAfter: "5 minutes",
+        error: "Too many requests, please try again later.",
+        retryAfter: "3 minute",
       },
       standardHeaders: true,
       legacyHeaders: false,
-      // Custom key generator for better user isolation
       keyGenerator: (req: any) => {
         const { ipKeyGenerator } = require("express-rate-limit");
 
-        // If user is authenticated, combine user ID with IP for better isolation
         if (req.user?.id) {
-          const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-          return `general-user-${req.user.id}-${baseKey}`;
+          return `general-user-${req.user.id}`;
         }
 
-        // For unauthenticated users, use IPv6-safe IP with session info
         const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
         const sessionId =
           req.sessionID || req.get("X-Session-ID") || "no-session";
-        return `general-ip-${baseKey}-${sessionId.substring(0, 10)}`;
+        const authorization = req.get("Authorization") || "no-auth";
+
+        return `general-${baseKey}-${userAgent.substring(
+          0,
+          15
+        )}-${sessionId.substring(0, 8)}-${authorization.substring(0, 10)}`;
+      },
+    },
+    api: {
+      windowMs: 2 * 60 * 1000,
+      max: 100,
+      message: {
+        error: "Too many API requests, please try again later.",
+        retryAfter: "2 minute",
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req: any) => {
+        if (req.user?.id) {
+          return `api-user-${req.user.id}`;
+        }
+
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID ||
+          req.get("X-Session-ID") ||
+          Math.random().toString(36).substr(2, 9);
+        const authorization = req.get("Authorization") || "no-auth";
+
+        return `api-session-${userAgent.substring(0, 15)}-${sessionId.substring(
+          0,
+          10
+        )}-${authorization.substring(0, 10)}`;
       },
     },
     auth: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 10, // 10 auth attempts per 5 minutes
+      windowMs: 2 * 60 * 1000,
+      max: 10,
       message: {
         error: "Too many authentication attempts, please try again later.",
-        retryAfter: "5 minutes",
+        retryAfter: "2 minutes",
       },
       standardHeaders: true,
       legacyHeaders: false,
-      // Custom key generator for auth isolation
       keyGenerator: (req: any) => {
         const { ipKeyGenerator } = require("express-rate-limit");
 
-        // For auth, primarily use IP but add email/username if provided
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
         const identifier =
           req.body?.email ||
           req.body?.username ||
           req.body?.phone ||
           "no-identifier";
 
-        // Combine IP with identifier for better auth rate limiting
-        return `auth-${baseKey}-${identifier.substring(0, 20)}`;
+        if (identifier !== "no-identifier") {
+          return `auth-identifier-${identifier.substring(0, 25)}`;
+        }
+        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID || req.get("X-Session-ID") || "no-session";
+        return `auth-${baseKey}-${userAgent.substring(
+          0,
+          10
+        )}-${sessionId.substring(0, 8)}`;
       },
     },
     payment: {
-      windowMs: 1 * 60 * 1000, // 1 minute
-      max: 2, // 2 requests per minute
+      windowMs: 1 * 60 * 1000,
+      max: 20,
       message: {
         error: "Too many payment requests, please try again in a moment.",
-        retryAfter: "1 minute",
+        retryAfter: "20 minute",
       },
       standardHeaders: true,
       legacyHeaders: false,
-      skipSuccessfulRequests: true,
-      // Custom key generator to rate limit per user, not per IP
       keyGenerator: (req: any) => {
         const { ipKeyGenerator } = require("express-rate-limit");
 
-        // If user is authenticated, use user ID for payment isolation
         if (req.user?.id) {
           return `payment-user-${req.user.id}`;
         }
 
-        // If no user, fall back to IPv6-safe IP with payment prefix
         const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-        return `payment-ip-${baseKey}`;
-      },
-    },
-    // Additional rate limiting for specific routes
-    qr: {
-      windowMs: 1 * 60 * 1000, // 1 minute
-      max: 20, // 20 QR generations per minute
-      message: {
-        error: "Too many QR code requests, please try again later.",
-        retryAfter: "1 minute",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
+        const userAgent = req.get("User-Agent") || "unknown";
+        const sessionId =
+          req.sessionID || req.get("X-Session-ID") || "no-session";
+        const authorization = req.get("Authorization") || "no-auth";
 
-        if (req.user?.id) {
-          return `qr-user-${req.user.id}`;
-        }
-
-        return `qr-ip-${baseKey}`;
-      },
-    },
-    ticket: {
-      windowMs: 1 * 60 * 1000, // 1 minute
-      max: 30, // 30 ticket operations per minute
-      message: {
-        error: "Too many ticket requests, please try again later.",
-        retryAfter: "1 minute",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-
-        if (req.user?.id) {
-          return `ticket-user-${req.user.id}`;
-        }
-
-        return `ticket-ip-${baseKey}`;
-      },
-    },
-    organization: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 50, // 50 organization operations per 5 minutes
-      message: {
-        error: "Too many organization requests, please try again later.",
-        retryAfter: "5 minutes",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-
-        if (req.user?.id) {
-          return `org-user-${req.user.id}`;
-        }
-
-        return `org-ip-${baseKey}`;
-      },
-    },
-    users: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 100, // 100 user operations per 5 minutes
-      message: {
-        error: "Too many user requests, please try again later.",
-        retryAfter: "5 minutes",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-
-        if (req.user?.id) {
-          return `users-user-${req.user.id}`;
-        }
-
-        return `users-ip-${baseKey}`;
-      },
-    },
-    contributors: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 50, // 50 contributor operations per 5 minutes
-      message: {
-        error: "Too many contributor requests, please try again later.",
-        retryAfter: "5 minutes",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-
-        if (req.user?.id) {
-          return `contrib-user-${req.user.id}`;
-        }
-
-        return `contrib-ip-${baseKey}`;
-      },
-    },
-    organizerRegistration: {
-      windowMs: 5 * 60 * 1000, // 5 minutes
-      max: 10, // 10 registration attempts per 5 minutes
-      message: {
-        error: "Too many registration requests, please try again later.",
-        retryAfter: "5 minutes",
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-      keyGenerator: (req: any) => {
-        const { ipKeyGenerator } = require("express-rate-limit");
-        const baseKey = ipKeyGenerator(req.ip || "unknown-ip");
-
-        // Use email if provided for registration isolation
-        const email = req.body?.email || "no-email";
-        return `reg-${baseKey}-${email.substring(0, 15)}`;
+        return `payment-${baseKey}-${userAgent.substring(
+          0,
+          15
+        )}-${sessionId.substring(0, 8)}-${authorization.substring(0, 10)}`;
       },
     },
   },

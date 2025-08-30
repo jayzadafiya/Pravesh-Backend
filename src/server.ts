@@ -102,26 +102,17 @@ async function startServer() {
     const generalLimiter = createRateLimiter(
       securityConfig.rateLimiting.general
     );
+    const apiLimiter = createRateLimiter(securityConfig.rateLimiting.api);
     const authLimiter = createRateLimiter(securityConfig.rateLimiting.auth);
-    const paymentLimiter = createRateLimiter(
-      securityConfig.rateLimiting.payment
-    );
 
-    // Apply general rate limiting to all requests first
+    // Apply light general rate limiting only for DDoS protection
     app.use(generalLimiter);
 
-    // Apply stricter rate limiting to sensitive routes (these override general limits)
-    app.use("/api/v1/auth", authLimiter);
-    app.use("/api/v1/payment", paymentLimiter);
+    // Apply API rate limiting to all API routes (per-user based)
+    app.use("/api/v1", apiLimiter);
 
-    // Apply rate limiting to specific API routes based on v1 router
-    app.use("/api/v1/qr", generalLimiter);
-    app.use("/api/v1/ticket", generalLimiter);
-    app.use("/api/v1/users", generalLimiter);
-    app.use("/api/v1/organization", generalLimiter);
-    app.use("/api/v1/organizer-registration", generalLimiter);
-    app.use("/api/v1/contributors", generalLimiter);
-    app.use("/api/v1/ping", generalLimiter);
+    // Apply stricter rate limiting to sensitive routes (these override API limits)
+    app.use("/api/v1/auth", authLimiter);
 
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
