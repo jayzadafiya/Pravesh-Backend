@@ -66,26 +66,6 @@ async function startServer() {
       })
     );
 
-    // Security: Rate limiting configurations
-    const generalLimiter = createRateLimiter(
-      securityConfig.rateLimiting.general
-    );
-    const authLimiter = createRateLimiter(securityConfig.rateLimiting.auth);
-    const paymentLimiter = createRateLimiter(
-      securityConfig.rateLimiting.payment
-    );
-
-    // Apply general rate limiting
-    app.use(generalLimiter);
-
-    // Apply stricter rate limiting to sensitive routes
-    app.use("/api/v1/auth", authLimiter);
-    app.use("/api/v1/login", authLimiter);
-    app.use("/api/v1/register", authLimiter);
-    app.use("/api/v1/forgot-password", authLimiter);
-    app.use("/api/v1/reset-password", authLimiter);
-    app.use("/api/v1/payment", paymentLimiter);
-    app.use("/api/v1/payments", paymentLimiter);
 
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
@@ -97,7 +77,7 @@ async function startServer() {
     app.use(
       hpp({
         whitelist: securityConfig.hppWhitelist,
-      })
+     })
     );
 
     // Security: Cookie parser with secure options
