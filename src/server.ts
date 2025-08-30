@@ -66,6 +66,38 @@ async function startServer() {
       })
     );
 
+    // Security: Enhanced CORS configuration (MUST be before rate limiting)
+    app.use(
+      cors({
+        origin: function (origin, callback) {
+          // Allow requests with no origin (mobile apps, curl, etc.)
+          if (!origin) return callback(null, true);
+
+          // Check if origin is in allowed list or matches regex patterns
+          const isAllowed = securityConfig.cors.allowedOrigins.some(
+            (allowedOrigin) => {
+              if (typeof allowedOrigin === "string") {
+                return allowedOrigin === origin;
+              }
+              return allowedOrigin.test(origin);
+            }
+          );
+
+          if (isAllowed) {
+            callback(null, true);
+          } else {
+            console.warn(`🚫 CORS blocked origin: ${origin}`);
+            callback(new Error("Not allowed by CORS"));
+          }
+        },
+        credentials: true,
+        methods: securityConfig.cors.methods,
+        allowedHeaders: securityConfig.cors.allowedHeaders,
+        exposedHeaders: ["set-cookie"],
+        maxAge: 86400, // 24 hours
+      })
+    );
+
     // Security: Rate limiting configurations
     const generalLimiter = createRateLimiter(
       securityConfig.rateLimiting.general
@@ -75,17 +107,21 @@ async function startServer() {
       securityConfig.rateLimiting.payment
     );
 
-    // Apply general rate limiting
+    // Apply general rate limiting to all requests first
     app.use(generalLimiter);
 
-    // Apply stricter rate limiting to sensitive routes
+    // Apply stricter rate limiting to sensitive routes (these override general limits)
     app.use("/api/v1/auth", authLimiter);
-    app.use("/api/v1/login", authLimiter);
-    app.use("/api/v1/register", authLimiter);
-    app.use("/api/v1/forgot-password", authLimiter);
-    app.use("/api/v1/reset-password", authLimiter);
     app.use("/api/v1/payment", paymentLimiter);
-    app.use("/api/v1/payments", paymentLimiter);
+
+    // Apply rate limiting to specific API routes based on v1 router
+    app.use("/api/v1/qr", generalLimiter);
+    app.use("/api/v1/ticket", generalLimiter);
+    app.use("/api/v1/users", generalLimiter);
+    app.use("/api/v1/organization", generalLimiter);
+    app.use("/api/v1/organizer-registration", generalLimiter);
+    app.use("/api/v1/contributors", generalLimiter);
+    app.use("/api/v1/ping", generalLimiter);
 
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
@@ -131,38 +167,6 @@ async function startServer() {
       express.urlencoded({
         extended: true,
         limit: securityConfig.bodyLimits.urlencoded,
-      })
-    );
-
-    // Security: Enhanced CORS configuration
-    app.use(
-      cors({
-        origin: function (origin, callback) {
-          // Allow requests with no origin (mobile apps, curl, etc.)
-          if (!origin) return callback(null, true);
-
-          // Check if origin is in allowed list or matches regex patterns
-          const isAllowed = securityConfig.cors.allowedOrigins.some(
-            (allowedOrigin) => {
-              if (typeof allowedOrigin === "string") {
-                return allowedOrigin === origin;
-              }
-              return allowedOrigin.test(origin);
-            }
-          );
-
-          if (isAllowed) {
-            callback(null, true);
-          } else {
-            console.warn(`🚫 CORS blocked origin: ${origin}`);
-            callback(new Error("Not allowed by CORS"));
-          }
-        },
-        credentials: true,
-        methods: securityConfig.cors.methods,
-        allowedHeaders: securityConfig.cors.allowedHeaders,
-        exposedHeaders: ["set-cookie"],
-        maxAge: 86400, // 24 hours
       })
     );
 
