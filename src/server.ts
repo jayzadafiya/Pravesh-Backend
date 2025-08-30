@@ -65,10 +65,9 @@ async function startServer() {
         crossOriginEmbedderPolicy: false, // Disable if needed for external resources
       })
     );
-
     // Security: Enhanced CORS configuration (MUST be before rate limiting)
     app.use(
-      cors({
+     cors({
         origin: function (origin, callback) {
           // Allow requests with no origin (mobile apps, curl, etc.)
           if (!origin) return callback(null, true);
@@ -98,22 +97,6 @@ async function startServer() {
       })
     );
 
-    // Security: Rate limiting configurations
-    const generalLimiter = createRateLimiter(
-      securityConfig.rateLimiting.general
-    );
-    const apiLimiter = createRateLimiter(securityConfig.rateLimiting.api);
-    const authLimiter = createRateLimiter(securityConfig.rateLimiting.auth);
-
-    // Apply light general rate limiting only for DDoS protection
-    app.use(generalLimiter);
-
-    // Apply API rate limiting to all API routes (per-user based)
-    app.use("/api/v1", apiLimiter);
-
-    // Apply stricter rate limiting to sensitive routes (these override API limits)
-    app.use("/api/v1/auth", authLimiter);
-
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
 
@@ -124,7 +107,7 @@ async function startServer() {
     app.use(
       hpp({
         whitelist: securityConfig.hppWhitelist,
-      })
+     })
     );
 
     // Security: Cookie parser with secure options
