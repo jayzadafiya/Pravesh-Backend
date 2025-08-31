@@ -59,13 +59,13 @@ export const getAllUserStats = async (req: Request, res: Response) => {
 }
 export const getAllTransaction = async (req: Request, res: Response) => {
   try {
-    const { eventIds, organizationId,page=1 } = req.query;
+    const { eventIds,page=1 } = req.query;
     const eventObjectId: mongoose.Types.ObjectId[] = Array.isArray(eventIds) && eventIds.length
       ? eventIds.map((ele) => new mongoose.Types.ObjectId(String(ele)))
       : [];
     const pageNumber = typeof page === 'string' ? parseInt(page, 10) : Number(page);
     const limitNumber = 10
-    const {transactions,count} = await UserService.getTransaction(eventObjectId, new mongoose.Types.ObjectId(String(organizationId)),pageNumber,limitNumber);
+    const {transactions,count} = await UserService.getTransaction(eventObjectId,pageNumber,limitNumber);
     let isNextPageAvailable = false
     if (transactions.length > limitNumber) {
       isNextPageAvailable = true
@@ -78,6 +78,8 @@ export const getAllTransaction = async (req: Request, res: Response) => {
       isNextPageAvailable
     });
   } catch (error) {
+    console.log(error);
+    
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch users stats with tickets',
@@ -96,7 +98,7 @@ export const getTransactionStats = async (req: Request, res: Response) => {
     const eventObjectId: mongoose.Types.ObjectId[] = Array.isArray(eventIds) && eventIds.length
       ? eventIds.map((ele) => new mongoose.Types.ObjectId(String(ele)))
       : [];
-    const transactionStats = await UserService.getTransactionStats(eventObjectId,new mongoose.Types.ObjectId(String(organizationId)));
+    const transactionStats = await UserService.getTransactionStats(eventObjectId);
     return res.status(200).json({
       success: true,
       data: transactionStats,

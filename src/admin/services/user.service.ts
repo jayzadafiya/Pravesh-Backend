@@ -2,6 +2,7 @@ import mongoose, { FilterQuery } from 'mongoose';
 import UserTicket from '../../models/User-ticket.model';
 import User from '../../models/User.model';
 import TransactionModel from '../../models/Transaction.model';
+import UserTicketModel from '../../models/User-ticket.model';
 
 export class UserService {
   // Get all unique users from UserTicket collection with selected fields, ticket count, email, latest buy date, and total spent
@@ -113,13 +114,13 @@ export class UserService {
 
   }
 
-  static async getTransaction(eventIds: mongoose.Types.ObjectId[],organizationId:mongoose.Types.ObjectId,page:number,limit:number) {
+  static async getTransaction(eventIds: mongoose.Types.ObjectId[],page:number,limit:number) {
     let query: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       query = {event: { $in: eventIds }, }
     }
-    query = {...query,organization:organizationId}
-    const transactions = await UserTicket.aggregate([
+    query = {...query}
+    const transactions = await UserTicketModel.aggregate([
       {
         $match: query
       },
@@ -197,16 +198,18 @@ export class UserService {
       $limit: limit + 1
      }
     ]);
-    const count = await UserTicket.countDocuments(query);
+    console.log(transactions);
+    
+    const count = await UserTicketModel.countDocuments(query);
     return {transactions,count};
   }
 
-  static async getTransactionStats(eventIds: mongoose.Types.ObjectId[],organizationId:mongoose.Types.ObjectId) {
+  static async getTransactionStats(eventIds: mongoose.Types.ObjectId[]) {
     let query: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       query = {event: { $in: eventIds }, }
     }
-    query = {...query,organization:organizationId}
+    // query = {...query,organization:organizationId}
     const stats = await TransactionModel.aggregate([
       {
         $match: query
