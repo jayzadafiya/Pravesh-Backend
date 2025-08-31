@@ -202,11 +202,11 @@ class userTicketService {
       };
     });
   };
-  checkedInUser = async (userTicketIds: [mongoose.Types.ObjectId]) => {
+  checkedInUser = async (userTicketIds: [string]) => {
     return await UserTicketModel.updateMany(
       {
         _id: {
-          $in: userTicketIds.map((id) => new mongoose.Types.ObjectId(id)),
+          $in: userTicketIds,
         },
       },
       { checkedInAt: Date.now() }

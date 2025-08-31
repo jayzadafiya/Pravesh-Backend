@@ -15,27 +15,44 @@ class qrController {
 
   verifyQRCode = async (req: Request, res: Response) => {
     try {
-      const { userId,eventId } = req.body;
+      const { userId, eventId } = req.body;
       const event = new mongoose.Types.ObjectId(eventId);
       const user = new mongoose.Types.ObjectId(userId);
-      const eventTicketDetails = await UserTicketService.getEventTicketByUser(event,user)
-      res.status(200).send({ success:true,data:eventTicketDetails });
+      const eventTicketDetails = await UserTicketService.getEventTicketByUser(
+        event,
+        user
+      );
+      res.status(200).send({ success: true, data: eventTicketDetails });
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
-  }
+  };
 
   verifyTickets = async (req: Request, res: Response) => {
     try {
-      const { userTicketIds } = req.body;
-      const ticketUserObjectId = userTicketIds.map((id:string) => new mongoose.Types.ObjectId(id))
-      const userTickets = await UserTicketService.checkedInUser(ticketUserObjectId)
-      res.status(200).send({ success:true,data:userTickets });
-    } 
-    catch (error: any) {
+      console.log("[QRController] verifyTickets called", {
+        headers: req.headers,
+        body: req.body,
+      });
+
+      const { userTicketIds } = req.body || {};
+
+      if (!userTicketIds || !Array.isArray(userTicketIds)) {
+        return res
+          .status(400)
+          .send({ message: "userTicketIds must be a non-empty array" });
+      }
+
+      const userTickets = await UserTicketService.checkedInUser(
+        userTicketIds as any
+      );
+
+      res.status(200).send({ success: true, data: userTickets });
+    } catch (error: any) {
+      console.error("[QRController] verifyTickets error:", error);
       res.status(error.statusCode || 500).send({ message: error.message });
     }
-  }
+  };
 }
 
 export const QRController = new qrController();
