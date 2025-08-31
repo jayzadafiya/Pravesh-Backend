@@ -3,6 +3,7 @@ import { OrganizationController } from "../controllers/organization.controller";
 import protect from "../middleware/auth.middleware";
 import { upload } from "../config/multer.config";
 import { AdminEventController } from "../admin/controllers/event.controller";
+import { getAllUsersWithTickets } from "../admin/controllers/user.controllers";
 
 const organizationRouter = express.Router();
 
@@ -79,6 +80,11 @@ organizationRouter.delete(
 organizationRouter.delete(
   "/event-partners/:eventId/:partnerId",
   AdminEventController.removePartnerById as any
+);
+
+organizationRouter.get(
+  "/user-tickets",
+  getAllUsersWithTickets
 );
 
 export default organizationRouter;
