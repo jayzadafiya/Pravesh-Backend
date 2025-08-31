@@ -199,6 +199,7 @@ class userTicketService {
         price: ele.price,
         status: ele.status,
         transaction: ele.transaction.paymentId,
+        checkedInAt: ele.checkedInAt,
       };
     });
   };
