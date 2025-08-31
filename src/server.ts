@@ -206,16 +206,16 @@ async function startServer() {
         }
 
         // Security: Block requests with suspicious headers
-        const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
-        for (const header of suspiciousHeaders) {
-          if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
-            console.warn(
-              `🚨 Suspicious header detected: ${header} from ${req.ip}`
-            );
-            res.status(403).json({ error: "Forbidden" });
-            return;
-          }
-        }
+        // const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
+        // for (const header of suspiciousHeaders) {
+        //   if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
+        //     console.warn(
+        //       `🚨 Suspicious header detected: ${header} from ${req.ip}`
+        //     );
+        //     res.status(403).json({ error: "Forbidden" });
+        //     return;
+        //   }
+        // }
 
         res.on("finish", () => {
           const duration = Date.now() - start;
