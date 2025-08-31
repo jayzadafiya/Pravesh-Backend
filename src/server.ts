@@ -53,7 +53,6 @@ async function startServer() {
 
     const app = express();
 
-    // Security: Trust proxy for accurate IP addresses behind reverse proxy
     // app.set("trust proxy", getTrustedProxies());
 
     // Security: Helmet for setting various HTTP headers
@@ -67,7 +66,7 @@ async function startServer() {
     );
     // Security: Enhanced CORS configuration (MUST be before rate limiting)
     app.use(
-     cors({
+      cors({
         origin: function (origin, callback) {
           // Allow requests with no origin (mobile apps, curl, etc.)
           if (!origin) return callback(null, true);
@@ -107,7 +106,7 @@ async function startServer() {
     app.use(
       hpp({
         whitelist: securityConfig.hppWhitelist,
-     })
+      })
     );
 
     // Security: Cookie parser with secure options
@@ -206,16 +205,16 @@ async function startServer() {
         }
 
         // Security: Block requests with suspicious headers
-        const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
-        for (const header of suspiciousHeaders) {
-          if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
-            console.warn(
-              `🚨 Suspicious header detected: ${header} from ${req.ip}`
-            );
-            res.status(403).json({ error: "Forbidden" });
-            return;
-          }
-        }
+        // const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
+        // for (const header of suspiciousHeaders) {
+        //   if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
+        //     console.warn(
+        //       `🚨 Suspicious header detected: ${header} from ${req.ip}`
+        //     );
+        //     res.status(403).json({ error: "Forbidden" });
+        //     return;
+        //   }
+        // }
 
         res.on("finish", () => {
           const duration = Date.now() - start;
