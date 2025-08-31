@@ -189,12 +189,12 @@ class userController {
         profileImage,
       })) as any;
 
-      // if (userData?.email !== updatedUser.email) {
-      updatedUser.emailVerified = false;
-      const JWTToken = await AuthService.signToken(userId, "5m");
-      await EmailService.sendAuthEmail(updatedUser.email, JWTToken);
-      await updatedUser.save();
-      // }
+      if (userData?.email !== updatedUser.email) {
+        updatedUser.emailVerified = false;
+        const JWTToken = await AuthService.signToken(userId, "5m");
+        await EmailService.sendAuthEmail(updatedUser.email, JWTToken);
+        await updatedUser.save();
+      }
       res.status(200).json(updatedUser);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });

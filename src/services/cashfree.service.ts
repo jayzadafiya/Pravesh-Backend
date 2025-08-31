@@ -1,5 +1,6 @@
 import { CASHFREE_CONFIG } from "../config/cashfree.config";
 import crypto from "crypto";
+import moment from "moment";
 import axios from "axios";
 
 class cashFreeService {
@@ -77,6 +78,13 @@ class cashFreeService {
         console.log("Cashfree URLs:", { returnUrl, webhookUrl });
       }
 
+      const expiryIso = process.env.CASHFREE_ORDER_EXPIRY_ISO
+        ? process.env.CASHFREE_ORDER_EXPIRY_ISO
+        : moment()
+            .utcOffset(330)
+            .add(16, "minutes")
+            .format("YYYY-MM-DDTHH:mm:ssZ");
+
       const orderRequest = {
         order_id: orderId,
         order_amount: amount,
@@ -87,9 +95,11 @@ class cashFreeService {
           customer_phone: customerDetails.customer_phone,
           customer_name: customerDetails.customer_name || "",
         },
+        order_expiry_time: expiryIso,
         order_meta: {
           return_url: returnUrl,
           notify_url: webhookUrl,
+          payment_methods: "cc,dc,upi,app",
         },
       };
 

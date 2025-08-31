@@ -81,3 +81,12 @@ export const validateResendEmail = [
     .isMongoId()
     .withMessage("Event ID must be a valid MongoDB ObjectId"),
 ];
+
+
+export const validateFindTodayEvents = [
+  body("organizationId")
+    .notEmpty()
+    .withMessage("Organization ID is required")
+    .isMongoId()
+    .withMessage("Organization ID must be a valid MongoDB ObjectId")
+]

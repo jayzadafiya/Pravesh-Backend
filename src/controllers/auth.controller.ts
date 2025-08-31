@@ -8,6 +8,7 @@ import { AwsSNSService } from "../services/awsSNS.service";
 import { AuthRequest } from "../interfaces/auth-request.interface";
 import { UserService } from "../services/user.service";
 import { EmailService } from "../services/email.service";
+import { WhatsappService } from "../services/whatsapp.service";
 class authController {
   upsetUser = async (req: Request, res: Response) => {
     try {
@@ -21,10 +22,25 @@ class authController {
         );
       }
       const OTP = +AuthService.createOtp();
+      // Check existing user for recent OTP request
+      const existingUser: any = await UserModel.findOne({ phone }).select(
+        "+OTPRequestedAt"
+      );
+
+      if (existingUser && existingUser.OTPRequestedAt) {
+        const diff =
+          Date.now() - new Date(existingUser.OTPRequestedAt).getTime();
+        if (diff < 60_000) {
+          throw new BadRequestException(
+            "OTP already sent. Please wait for 1 minute before requesting again."
+          );
+        }
+      }
+
       const user: any = await upsertOne(
         UserModel,
         { phone },
-        { phone, OTP, phonePrefix },
+        { phone, OTP, phonePrefix, OTPRequestedAt: new Date() },
         "+active"
       );
 
@@ -43,10 +59,12 @@ class authController {
       user.save();
 
       if (process.env.MAIN_ENVIRONMENT !== "development") {
-        await AwsSNSService.sendOtpSMS(
-          `+${phonePrefix}${phone}`,
-          OTP.toString()
-        );
+        // await AwsSNSService.sendOtpSMS(
+        //   `+${phonePrefix}${phone}`,
+        //   OTP.toString()
+        // );
+
+        await WhatsappService.sendOTPMessage(OTP, phone);
       }
       res.status(200).json({
         sendOtp: true,
@@ -58,14 +76,32 @@ class authController {
   verifyOtp = async (req: Request, res: Response) => {
     try {
       const { phone, otp } = req.body;
-      const user: any = await UserModel.findOne({ phone }).select("+OTP");
+      const user: any = await UserModel.findOne({ phone }).select(
+        "+OTP +OTPRequestedAt"
+      );
       if (!user) throw new BadRequestException("User not found");
+
+      // Verify OTP exists and is not expired (1 minute)
+      if (!user.OTP) throw new ForbiddenException("Invalid or expired OTP");
+
+      const requestedAt = user.OTPRequestedAt
+        ? new Date(user.OTPRequestedAt).getTime()
+        : 0;
+      const age = Date.now() - requestedAt;
+      if (age > 60_000) {
+        // OTP expired
+        user.OTP = null;
+        user.OTPRequestedAt = null;
+        await user.save();
+        throw new ForbiddenException("OTP expired. Please request a new one.");
+      }
 
       if (process.env.MAIN_ENVIRONMENT !== "development") {
         if (+user.OTP !== +otp) throw new ForbiddenException("Invalid OTP");
       }
 
       user.OTP = null;
+      user.OTPRequestedAt = null;
       await user.save();
 
       await AuthService.createSendToken(user, 200, res);

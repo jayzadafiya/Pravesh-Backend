@@ -53,7 +53,6 @@ async function startServer() {
 
     const app = express();
 
-    // Security: Trust proxy for accurate IP addresses behind reverse proxy
     // app.set("trust proxy", getTrustedProxies());
 
     // Security: Helmet for setting various HTTP headers
@@ -65,27 +64,37 @@ async function startServer() {
         crossOriginEmbedderPolicy: false, // Disable if needed for external resources
       })
     );
+    // Security: Enhanced CORS configuration (MUST be before rate limiting)
+    app.use(
+      cors({
+        origin: function (origin, callback) {
+          // Allow requests with no origin (mobile apps, curl, etc.)
+          if (!origin) return callback(null, true);
 
-    // Security: Rate limiting configurations
-    const generalLimiter = createRateLimiter(
-      securityConfig.rateLimiting.general
+          // Check if origin is in allowed list or matches regex patterns
+          const isAllowed = securityConfig.cors.allowedOrigins.some(
+            (allowedOrigin) => {
+              if (typeof allowedOrigin === "string") {
+                return allowedOrigin === origin;
+              }
+              return allowedOrigin.test(origin);
+            }
+          );
+
+          if (isAllowed) {
+            callback(null, true);
+          } else {
+            console.warn(`🚫 CORS blocked origin: ${origin}`);
+            callback(new Error("Not allowed by CORS"));
+          }
+        },
+        credentials: true,
+        methods: securityConfig.cors.methods,
+        allowedHeaders: securityConfig.cors.allowedHeaders,
+        exposedHeaders: ["set-cookie"],
+        maxAge: 86400, // 24 hours
+      })
     );
-    const authLimiter = createRateLimiter(securityConfig.rateLimiting.auth);
-    const paymentLimiter = createRateLimiter(
-      securityConfig.rateLimiting.payment
-    );
-
-    // Apply general rate limiting
-    app.use(generalLimiter);
-
-    // Apply stricter rate limiting to sensitive routes
-    app.use("/api/v1/auth", authLimiter);
-    app.use("/api/v1/login", authLimiter);
-    app.use("/api/v1/register", authLimiter);
-    app.use("/api/v1/forgot-password", authLimiter);
-    app.use("/api/v1/reset-password", authLimiter);
-    app.use("/api/v1/payment", paymentLimiter);
-    app.use("/api/v1/payments", paymentLimiter);
 
     // Security: Data sanitization against NoSQL query injection
     app.use(mongoSanitize());
@@ -131,38 +140,6 @@ async function startServer() {
       express.urlencoded({
         extended: true,
         limit: securityConfig.bodyLimits.urlencoded,
-      })
-    );
-
-    // Security: Enhanced CORS configuration
-    app.use(
-      cors({
-        origin: function (origin, callback) {
-          // Allow requests with no origin (mobile apps, curl, etc.)
-          if (!origin) return callback(null, true);
-
-          // Check if origin is in allowed list or matches regex patterns
-          const isAllowed = securityConfig.cors.allowedOrigins.some(
-            (allowedOrigin) => {
-              if (typeof allowedOrigin === "string") {
-                return allowedOrigin === origin;
-              }
-              return allowedOrigin.test(origin);
-            }
-          );
-
-          if (isAllowed) {
-            callback(null, true);
-          } else {
-            console.warn(`🚫 CORS blocked origin: ${origin}`);
-            callback(new Error("Not allowed by CORS"));
-          }
-        },
-        credentials: true,
-        methods: securityConfig.cors.methods,
-        allowedHeaders: securityConfig.cors.allowedHeaders,
-        exposedHeaders: ["set-cookie"],
-        maxAge: 86400, // 24 hours
       })
     );
 
@@ -228,16 +205,16 @@ async function startServer() {
         }
 
         // Security: Block requests with suspicious headers
-        const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
-        for (const header of suspiciousHeaders) {
-          if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
-            console.warn(
-              `🚨 Suspicious header detected: ${header} from ${req.ip}`
-            );
-            res.status(403).json({ error: "Forbidden" });
-            return;
-          }
-        }
+        // const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
+        // for (const header of suspiciousHeaders) {
+        //   if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
+        //     console.warn(
+        //       `🚨 Suspicious header detected: ${header} from ${req.ip}`
+        //     );
+        //     res.status(403).json({ error: "Forbidden" });
+        //     return;
+        //   }
+        // }
 
         res.on("finish", () => {
           const duration = Date.now() - start;
