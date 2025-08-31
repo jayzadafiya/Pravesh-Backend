@@ -7,6 +7,7 @@ import organizationRouter from "./organization.router";
 import paymentRouter from "./payment.router";
 import organizerRegistrationRouter from "./organizer-registration.router";
 import contributorRouter from "./contributor.router";
+import ticketTransferRouter from "./ticket-transfer.router";
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use("/organization", organizationRouter);
 router.use("/payment", paymentRouter);
 router.use("/organizer-registration", organizerRegistrationRouter);
 router.use("/contributors", contributorRouter);
+router.use("/ticket-transfer", ticketTransferRouter);
 
 router.get("/ping", (req, res) => {
   res.send("✅ Pong");
