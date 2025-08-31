@@ -3,7 +3,7 @@ import { OrganizationController } from "../controllers/organization.controller";
 import protect from "../middleware/auth.middleware";
 import { upload } from "../config/multer.config";
 import { AdminEventController } from "../admin/controllers/event.controller";
-import { getAllUserStats, getAllUsersWithTickets } from "../admin/controllers/user.controllers";
+import { getAllTransaction, getAllUserStats, getAllUsersWithTickets, getTransactionStats } from "../admin/controllers/user.controllers";
 
 const organizationRouter = express.Router();
 
@@ -97,6 +97,16 @@ organizationRouter.get(
 organizationRouter.get(
   "/user-tickets-stats",
   getAllUserStats
+);
+
+organizationRouter.get(
+  "/transaction-list",
+  getAllTransaction
+);
+
+organizationRouter.get(
+  "/transaction-stat",
+  getTransactionStats
 );
 
 export default organizationRouter;

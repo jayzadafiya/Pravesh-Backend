@@ -11,7 +11,7 @@ export const getAllUsersWithTickets = async (req: Request, res: Response) => {
       ? eventIds.map((ele) => new mongoose.Types.ObjectId(String(ele)))
       : [];
     const pageNumber = typeof page === 'string' ? parseInt(page, 10) : Number(page);
-    const limitNumber = 1
+    const limitNumber = 10
     const {usersWithStats,count} = await UserService.getAllUsersFromTickets(
       eventObjectId,
       pageNumber,
@@ -59,14 +59,23 @@ export const getAllUserStats = async (req: Request, res: Response) => {
 }
 export const getAllTransaction = async (req: Request, res: Response) => {
   try {
-    const { eventIds, organizationId } = req.query;
+    const { eventIds, organizationId,page=1 } = req.query;
     const eventObjectId: mongoose.Types.ObjectId[] = Array.isArray(eventIds) && eventIds.length
       ? eventIds.map((ele) => new mongoose.Types.ObjectId(String(ele)))
       : [];
-    const transactions = await UserService.getTransaction(eventObjectId, new mongoose.Types.ObjectId(String(organizationId)));
+    const pageNumber = typeof page === 'string' ? parseInt(page, 10) : Number(page);
+    const limitNumber = 10
+    const {transactions,count} = await UserService.getTransaction(eventObjectId, new mongoose.Types.ObjectId(String(organizationId)),pageNumber,limitNumber);
+    let isNextPageAvailable = false
+    if (transactions.length > limitNumber) {
+      isNextPageAvailable = true
+      transactions.pop();
+    }
     return res.status(200).json({
       success: true,
       data: transactions,
+      pageCount: Math.ceil(count / limitNumber),
+      isNextPageAvailable
     });
   } catch (error) {
     return res.status(500).json({

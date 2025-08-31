@@ -113,7 +113,7 @@ export class UserService {
 
   }
 
-  static async getTransaction(eventIds: mongoose.Types.ObjectId[],organizationId:mongoose.Types.ObjectId) {
+  static async getTransaction(eventIds: mongoose.Types.ObjectId[],organizationId:mongoose.Types.ObjectId,page:number,limit:number) {
     let query: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       query = {event: { $in: eventIds }, }
@@ -187,9 +187,18 @@ export class UserService {
       {
         $addFields:{user:{$arrayElemAt:["$user",0]}}
       },
-      
+     {
+        $sort: { createdAt: -1 }
+     },
+     {
+      $skip:(page - 1) * limit
+     },
+     {
+      $limit: limit + 1
+     }
     ]);
-    return transactions;
+    const count = await UserTicket.countDocuments(query);
+    return {transactions,count};
   }
 
   static async getTransactionStats(eventIds: mongoose.Types.ObjectId[],organizationId:mongoose.Types.ObjectId) {
