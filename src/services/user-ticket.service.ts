@@ -12,7 +12,7 @@ class userTicketService {
       .populate("event")
       .populate({
         path: "venue",
-        select: "venue ticketTypes",
+        select: "venue ticketTypes date",
       })
       .populate({
         path: "transaction",
@@ -45,6 +45,7 @@ class userTicketService {
         venue: {
           _id: venue?._id,
           venue: venue?.venue,
+          date: venue?.date,
         },
         ticketType: ticket.ticketType,
         ticketTypeDetails: ticketTypeDetails && {
