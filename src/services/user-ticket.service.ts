@@ -98,6 +98,27 @@ class userTicketService {
       { $set: { status: "Confirmed", transaction: transactionId } }
     );
   };
+
+  getEventTicketByUser = async(event:mongoose.Types.ObjectId,user:mongoose.Types.ObjectId)=>{
+    const events:any= await UserTicketModel.find({event,user}).populate("user").populate("transaction").lean();
+    return events.map((ele:any)=>{
+      return{
+        _id:ele._id,
+        userId:ele.user._id,
+        firatName:ele.user.firstName,
+        lastName:ele.user.lastName,
+        phone:ele.user.phone,
+        ticketType:ele.ticketType,
+        quantity:ele.quantity,
+        price:ele.price,
+        status:ele.status,
+        transaction:ele.transaction.paymentId,
+      }
+    })
+  }
+  checkedInUser = async(userTicketIds:[mongoose.Types.ObjectId])=>{
+    return await UserTicketModel.updateMany({_id:{$in:userTicketIds}},{checkedInAt:Date.now()})
+  }
 }
 
 export const UserTicketService = new userTicketService();

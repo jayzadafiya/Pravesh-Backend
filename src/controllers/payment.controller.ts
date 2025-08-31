@@ -224,7 +224,7 @@ class paymentController {
     res: Response
   ) => {
     try {
-      const { orderId, selectedTickets, referenceId, paymentMode } = req.body;
+      const { orderId, selectedTickets, referenceId, paymentMode,eventId } = req.body;
 
       const userId = req.user?.id;
 
@@ -269,12 +269,17 @@ class paymentController {
         selectedTickets
       );
 
+      if(!newTickets?.length){
+        throw new BadRequestException("Tickets are not created");
+      }
+
       const verifiedOrderData = apiVerification.orderData;
 
       const transactionData = {
         user: userId,
         orderId: orderId,
         paymentId: verifiedOrderData.cf_order_id || referenceId,
+        event:new mongoose.Types.ObjectId(newTickets[0].event),
         paymentGateway: "cashfree" as const,
         status: "paid" as const,
         currency: verifiedOrderData.order_currency || "INR",

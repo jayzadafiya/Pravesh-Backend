@@ -51,8 +51,8 @@ class adminEventService {
       type === "artist"
         ? { $pull: { artists: { _id: profile } } }
         : type === "sponsor"
-        ? { $pull: { sponsors: { _id: profile } } }
-        : { $pull: { partners: { _id: profile } } };
+          ? { $pull: { sponsors: { _id: profile } } }
+          : { $pull: { partners: { _id: profile } } };
     const event = await EventModel.findOneAndUpdate({ _id: eventId }, update, {
       new: true,
     });
@@ -63,6 +63,11 @@ class adminEventService {
 
     return event;
   };
+
+  getTodayEvent = async ( organization: mongoose.Types.ObjectId) => {
+    const events = await EventModel.find({organization: organization });
+    return events;
+  }
 }
 
 export const AdminEventService = new adminEventService();

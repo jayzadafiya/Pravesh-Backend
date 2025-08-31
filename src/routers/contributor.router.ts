@@ -8,6 +8,7 @@ import {
   removeContributorFromEvent,
   resendVerificationEmail,
   getContributorEvents,
+  getContributorTodayEvent,
 } from "../controllers/contributor.controller";
 import authMiddleware from "../middleware/auth.middleware";
 import { validateRequest } from "../middleware/validate-request";
@@ -20,6 +21,7 @@ import {
   validateUpdateStatus,
   validateRemoveFromEvent,
   validateResendEmail,
+  validateFindTodayEvents,
 } from "../validations/contributor.validation";
 
 const router = Router();
@@ -80,5 +82,11 @@ router.post(
   validateRequest,
   resendVerificationEmail
 );
+
+router.post("/event",
+  validateFindTodayEvents,
+  validateRequest,
+  getContributorTodayEvent
+)
 
 export default router;
