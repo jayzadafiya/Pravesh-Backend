@@ -53,7 +53,6 @@ async function startServer() {
 
     const app = express();
 
-    // Security: Trust proxy for accurate IP addresses behind reverse proxy
     // app.set("trust proxy", getTrustedProxies());
 
     // Security: Helmet for setting various HTTP headers
@@ -67,7 +66,7 @@ async function startServer() {
     );
     // Security: Enhanced CORS configuration (MUST be before rate limiting)
     app.use(
-     cors({
+      cors({
         origin: function (origin, callback) {
           // Allow requests with no origin (mobile apps, curl, etc.)
           if (!origin) return callback(null, true);
@@ -107,7 +106,7 @@ async function startServer() {
     app.use(
       hpp({
         whitelist: securityConfig.hppWhitelist,
-     })
+      })
     );
 
     // Security: Cookie parser with secure options
