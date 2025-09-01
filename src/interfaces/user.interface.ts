@@ -19,5 +19,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   OTPRequestedAt?: Date;
+  OTPRequestCount?: number;
+  OTPRequestCountResetAt?: Date;
   emailVerified?: boolean;
 }

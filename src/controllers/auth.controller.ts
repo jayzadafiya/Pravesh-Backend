@@ -22,25 +22,55 @@ class authController {
         );
       }
       const OTP = +AuthService.createOtp();
-      // Check existing user for recent OTP request
       const existingUser: any = await UserModel.findOne({ phone }).select(
-        "+OTPRequestedAt"
+        "+OTPRequestedAt +OTPRequestCount +OTPRequestCountResetAt"
       );
 
-      if (existingUser && existingUser.OTPRequestedAt) {
-        const diff =
-          Date.now() - new Date(existingUser.OTPRequestedAt).getTime();
-        if (diff < 60_000) {
+      if (existingUser) {
+        const now = new Date();
+        const resetTime = existingUser.OTPRequestCountResetAt
+          ? new Date(existingUser.OTPRequestCountResetAt)
+          : null;
+
+        if (!resetTime || now.getTime() - resetTime.getTime() >= 3600000) {
+          existingUser.OTPRequestCount = 0;
+          existingUser.OTPRequestCountResetAt = now;
+        }
+
+        if (existingUser.OTPRequestCount >= 10) {
+          const timeUntilReset = Math.ceil(
+            (3600000 -
+              (now.getTime() -
+                new Date(existingUser.OTPRequestCountResetAt).getTime())) /
+              60000
+          );
           throw new BadRequestException(
-            "OTP already sent. Please wait for 1 minute before requesting again."
+            `OTP limit exceeded. You can request OTP again in ${timeUntilReset} minutes.`
           );
         }
+      }
+
+      const now = new Date();
+      const updateData: any = {
+        phone,
+        OTP,
+        phonePrefix,
+        OTPRequestedAt: now,
+      };
+
+      if (existingUser) {
+        updateData.OTPRequestCount = (existingUser.OTPRequestCount || 0) + 1;
+        updateData.OTPRequestCountResetAt =
+          existingUser.OTPRequestCountResetAt || now;
+      } else {
+        updateData.OTPRequestCount = 1;
+        updateData.OTPRequestCountResetAt = now;
       }
 
       const user: any = await upsertOne(
         UserModel,
         { phone },
-        { phone, OTP, phonePrefix, OTPRequestedAt: new Date() },
+        updateData,
         "+active"
       );
 

@@ -178,6 +178,12 @@ class paymentController {
 
         for (const ticket of ticketTypes) {
           const availableQuantity = availableTickets[ticket._id]?.quantity || 0;
+          if (ticket.count > 10) {
+            throw new BadRequestException(
+              "You cannot purchase more than 10 tickets."
+            );
+          }
+
           if (ticket.count > availableQuantity) {
             throw new BadRequestException(
               `Not enough availability for ticket type: ${ticket.type}`
@@ -224,7 +230,8 @@ class paymentController {
     res: Response
   ) => {
     try {
-      const { orderId, selectedTickets, referenceId, paymentMode,eventId } = req.body;
+      const { orderId, selectedTickets, referenceId, paymentMode, eventId } =
+        req.body;
 
       const userId = req.user?.id;
 
@@ -269,7 +276,7 @@ class paymentController {
         selectedTickets
       );
 
-      if(!newTickets?.length){
+      if (!newTickets?.length) {
         throw new BadRequestException("Tickets are not created");
       }
 
@@ -279,7 +286,7 @@ class paymentController {
         user: userId,
         orderId: orderId,
         paymentId: verifiedOrderData.cf_order_id || referenceId,
-        event:new mongoose.Types.ObjectId(newTickets[0].event),
+        event: new mongoose.Types.ObjectId(newTickets[0].event),
         paymentGateway: "cashfree" as const,
         status: "paid" as const,
         currency: verifiedOrderData.order_currency || "INR",

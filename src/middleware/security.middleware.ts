@@ -180,7 +180,7 @@ export const requestTimingAnalysis = (
 
   // Detect rapid-fire requests (more than 5 requests in 1 second)
   const recentRequests = timings.filter((time) => now - time < 1000);
-  if (recentRequests.length > 5) {
+  if (recentRequests.length > 20) {
     console.warn(
       `🚨 Rapid requests detected from ${clientIP}: ${recentRequests.length} requests in 1 second`
     );

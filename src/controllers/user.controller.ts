@@ -101,6 +101,11 @@ class userController {
               typeof quantity === "number" &&
               quantity > 0
             ) {
+              if (quantity > 10) {
+                return res.status(400).json({
+                  message: "Maximum 10 tickets allowed per ticket type",
+                });
+              }
               newTickets[ticketId] = quantity;
             }
           }
@@ -120,6 +125,12 @@ class userController {
           const [ticketId, quantity] = Object.entries(ticketObj)[0];
 
           if (!mongoose.Types.ObjectId.isValid(ticketId)) continue;
+
+          if (quantity > 10) {
+            return res.status(400).json({
+              message: "Maximum 10 tickets allowed per ticket type",
+            });
+          }
 
           if (existingVenue.tickets instanceof Map) {
             if (quantity <= 0) {

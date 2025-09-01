@@ -70,6 +70,15 @@ const UserSchema: Schema = new Schema(
       type: Date,
       select: false,
     },
+    OTPRequestCount: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    OTPRequestCountResetAt: {
+      type: Date,
+      select: false,
+    },
     qrCode: { type: String },
     emailVerified: {
       type: Boolean,
