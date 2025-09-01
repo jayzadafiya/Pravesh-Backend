@@ -1,8 +1,13 @@
+import mongoose from "mongoose";
 import { ITransaction } from "../interfaces/transaction.interface";
 import transactionModel from "../models/Transaction.model";
 import { createOne } from "../utils/helper";
 
 class transactionService {
+  getTransactionByPaymentId(paymentId: string) {
+    return transactionModel.findOne({ paymentId });
+  }
+
   addTransaction = async (transaction: ITransaction) => {
     return await createOne(transactionModel, transaction);
   };

@@ -2,6 +2,8 @@ import { CASHFREE_CONFIG } from "../config/cashfree.config";
 import crypto from "crypto";
 import moment from "moment";
 import axios from "axios";
+import { getOne } from "../utils/helper";
+import { TransactionService } from "./transaction.service";
 
 class cashFreeService {
   private getBaseUrl(): string {
@@ -176,7 +178,17 @@ class cashFreeService {
       );
 
       const orderData = response.data;
+      const transaction = await TransactionService.getTransactionByPaymentId(
+        orderData?.cf_order_id
+      );
 
+      if (transaction) {
+        return {
+          isValid: false,
+          isPaid: false,
+          error: "Error while creating transaction",
+        };
+      }
       return {
         isValid: true,
         isPaid: orderData.order_status === "PAID",
