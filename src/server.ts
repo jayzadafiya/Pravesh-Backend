@@ -13,6 +13,7 @@ import router from "./routers/v1.router";
 import globalErrorHandler from "./middleware/error-handler.middleware";
 import connectDB from "./config/db.config";
 import "./cron/pingJob";
+import "./cron/ticket-reservation-cleanup";
 import { Server } from "http";
 import {
   securityConfig,
@@ -316,7 +317,6 @@ async function startServer() {
     app.get(
       "/api/v1/security/status",
       (req: express.Request, res: express.Response) => {
-        // Only allow in development or with proper authentication
         if (
           process.env.MAIN_ENVIRONMENT === "production" &&
           !req.headers.authorization
@@ -357,7 +357,6 @@ async function startServer() {
       });
     });
 
-    // Security: Enhanced global error handler
     app.use(
       (
         err: Error,
@@ -365,7 +364,6 @@ async function startServer() {
         res: express.Response,
         next: express.NextFunction
       ) => {
-        // Log security-related errors
         if (
           err.message.includes("CORS") ||
           err.message.includes("rate limit") ||
@@ -396,7 +394,7 @@ async function startServer() {
       console.log(
         `🌍 Environment: ${process.env.MAIN_ENVIRONMENT || "development"}`
       );
-      restartCount = 0; // Reset restart count on successful start
+      restartCount = 0;
     });
 
     // Handle server errors

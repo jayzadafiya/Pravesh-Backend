@@ -45,7 +45,6 @@ paymentRouter.post(
   PaymentController.verifyCashfreePaymentAndAddTickets as any
 );
 
-// Webhook endpoint - No auth required, raw body parsing for signature verification
 paymentRouter.post(
   "/cashfree/webhook",
   express.raw({ type: "application/json" }),
