@@ -141,6 +141,30 @@ class eventTicketService {
 
     return result;
   };
+
+  increaseRemainingCount = async (
+    venueTicketId: mongoose.Types.ObjectId,
+    ticketTypeId: mongoose.Types.ObjectId,
+    quantity: number
+  ) => {
+    const result = await VenueTicketModel.updateOne(
+      {
+        _id: venueTicketId,
+        "ticketTypes._id": ticketTypeId,
+      },
+      {
+        $inc: {
+          "ticketTypes.$.quantity": quantity,
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new Error("Ticket type not found or failed to increase count.");
+    }
+
+    return result;
+  };
 }
 
 export const EventTicketService = new eventTicketService();
