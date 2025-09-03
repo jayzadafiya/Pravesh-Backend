@@ -23,15 +23,6 @@ export const validateCreatePaymentOrder = [
   body("selectedTickets.*.ticketTypes")
     .isArray({ min: 1 })
     .withMessage("Each ticket group must have at least one ticket type"),
-  body("selectedTickets.*.ticketTypes.*.count")
-    .isNumeric()
-    .withMessage("Ticket count must be a number")
-    .custom((value) => {
-      if (value < 1) {
-        throw new Error("Ticket count must be at least 1");
-      }
-      return true;
-    }),
 ];
 
 // Validation for verifying Cashfree payment
