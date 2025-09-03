@@ -82,6 +82,7 @@ class userController {
       }
 
       const cart = await UserService.upsertCart(userId);
+      console.log(cart);
       for (const [venueId, ticketsArray] of Object.entries(items)) {
         if (!mongoose.Types.ObjectId.isValid(venueId)) continue;
 
@@ -91,7 +92,6 @@ class userController {
         );
 
         if (!existingVenue) {
-          // Add new venue if it doesn't exist
           const newTickets: Record<string, number> = {};
 
           for (const ticketObj of ticketsArray as Record<string, number>[]) {
@@ -131,6 +131,7 @@ class userController {
               message: "Maximum 10 tickets allowed per ticket type",
             });
           }
+          console.log(quantity);
 
           if (existingVenue.tickets instanceof Map) {
             if (quantity <= 0) {
@@ -151,7 +152,7 @@ class userController {
       // 🧹 Remove venues with empty ticket objects
       cart.items = cart.items.filter((item) => {
         if (item.tickets instanceof Map) {
-          return item.tickets.size > 0;
+          return item.tickets.size >= 0;
         } else {
           return Object.keys(item.tickets || {}).length > 0;
         }

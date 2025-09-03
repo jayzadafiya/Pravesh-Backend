@@ -14,7 +14,6 @@ import { createRateLimiter, securityConfig } from "../config/security.config";
 const paymentRouter = express.Router();
 
 // Create payment limiter instance
-const paymentLimiter = createRateLimiter(securityConfig.rateLimiting.payment);
 
 // RAZORPAY ROUTES (COMMENTED - KEEPING FOR BACKWARD COMPATIBILITY)
 // paymentRouter.post(
@@ -32,7 +31,6 @@ const paymentLimiter = createRateLimiter(securityConfig.rateLimiting.payment);
 paymentRouter.post(
   "/cashfree/create-order",
   protect,
-  paymentLimiter,
   validateCreatePaymentOrder,
   validateRequest,
   PaymentController.createCashfreePaymentOrder as any
@@ -41,7 +39,6 @@ paymentRouter.post(
 paymentRouter.post(
   "/cashfree/verify-payment",
   protect,
-  paymentLimiter,
   PaymentController.verifyCashfreePaymentAndAddTickets as any
 );
 

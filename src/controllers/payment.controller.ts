@@ -169,9 +169,7 @@ class paymentController {
         throw new BadRequestException("Selected tickets are required");
       }
 
-      // Validate ticket availability and limits
       for (const ticketGroup of selectedTickets) {
-        const venueId = ticketGroup._id;
         const ticketTypes = ticketGroup.ticketTypes;
 
         for (const ticket of ticketTypes) {
@@ -180,26 +178,7 @@ class paymentController {
               "You cannot purchase more than 10 tickets."
             );
           }
-
-          // Check availability including current reservations
-          const availabilityCheck =
-            await TicketReservationService.checkAvailabilityWithReservations(
-              new mongoose.Types.ObjectId(venueId),
-              new mongoose.Types.ObjectId(ticket._id),
-              ticket.count
-            );
-
-          if (!availabilityCheck.canReserve) {
-            throw new BadRequestException(
-              `Not enough availability for ticket type: ${ticket.type}`
-            );
-          }
         }
-      }
-
-      const user = await UserService.getUserById(userId);
-      if (!user) {
-        throw new BadRequestException("User not found");
       }
 
       const orderId = CashFreeService.generateOrderId();
@@ -217,6 +196,11 @@ class paymentController {
         );
       }
 
+      const user = await UserService.getUserById(userId);
+      if (!user) {
+        throw new BadRequestException("User not found");
+      }
+
       const cashfreeOrder = await CashFreeService.createPaymentOrder(
         amount,
         currency,
@@ -229,6 +213,16 @@ class paymentController {
         }
       );
 
+      const createMinutePrecisionDate = (minutesFromNow: number = 0): Date => {
+        const now = new Date();
+        now.setSeconds(0, 0); // Set seconds and milliseconds to 0
+        if (minutesFromNow > 0) {
+          now.setMinutes(now.getMinutes() + minutesFromNow);
+        }
+        return now;
+      };
+
+      const reservationExpiresAt = createMinutePrecisionDate(5);
       res.status(200).send({
         success: true,
         orderId: orderId,
@@ -236,12 +230,12 @@ class paymentController {
         orderToken: cashfreeOrder.order_token,
         amount: amount,
         currency: currency,
-        reservationExpiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes from now
+        reservationExpiresAt: reservationExpiresAt,
       });
     } catch (error: any) {
       console.error("Error creating Cashfree payment order:", error);
 
-      if (req.body?.selectedTickets && req.user?.id) {
+      if (req.user?.id) {
         try {
           await TicketReservationService.cancelReservationsByUserId(
             new mongoose.Types.ObjectId(req.user.id)

@@ -4,40 +4,45 @@ import { EventTicketService } from "./event-ticket.service";
 import { BadRequestException } from "../utils/exceptions";
 
 class ticketReservationService {
+  private createMinutePrecisionDate = (minutesFromNow: number = 0): Date => {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    if (minutesFromNow > 0) {
+      now.setMinutes(now.getMinutes() + minutesFromNow);
+    }
+    return now;
+  };
+
   reserveTickets = async (
     userId: mongoose.Types.ObjectId,
     orderId: string,
     selectedTickets: any[],
     reservationDurationMinutes: number = 5
   ) => {
+    const existingReservationsCount = await this.cancelReservationsByUserId(
+      userId
+    );
+    if (existingReservationsCount > 0) {
+      console.log(
+        `Released ${existingReservationsCount} existing reservations for user ${userId}`
+      );
+    }
+
     const reservations = [];
-    const expiresAt = new Date(
-      Date.now() + reservationDurationMinutes * 60 * 1000
+    const reservedAt = this.createMinutePrecisionDate();
+    const expiresAt = this.createMinutePrecisionDate(
+      reservationDurationMinutes
     );
 
     try {
+      await this.validateTicketsAvailability(selectedTickets);
+
       for (const ticketGroup of selectedTickets) {
         const venueId = new mongoose.Types.ObjectId(ticketGroup._id);
-
-        const availableTickets =
-          await EventTicketService.getAvailableTicketsCount(venueId);
 
         for (const ticket of ticketGroup.ticketTypes) {
           const ticketTypeId = new mongoose.Types.ObjectId(ticket._id);
           const requestedQuantity = ticket.count;
-
-          const currentReserved = await this.getReservedQuantity(
-            venueId,
-            ticketTypeId
-          );
-          const actualAvailable =
-            (availableTickets[ticket._id]?.quantity || 0) - currentReserved;
-
-          if (requestedQuantity > actualAvailable) {
-            throw new BadRequestException(
-              `Not enough tickets available for ${ticket.type}. Available: ${actualAvailable}, Requested: ${requestedQuantity}`
-            );
-          }
 
           const reservationId = this.generateReservationId();
           const reservation = new TicketReservationModel({
@@ -47,6 +52,7 @@ class ticketReservationService {
             venueId,
             ticketTypeId,
             quantity: requestedQuantity,
+            reservedAt,
             expiresAt,
             status: "reserved",
           });
@@ -73,13 +79,14 @@ class ticketReservationService {
     venueId: mongoose.Types.ObjectId,
     ticketTypeId: mongoose.Types.ObjectId
   ): Promise<number> => {
+    const currentTime = this.createMinutePrecisionDate();
     const result = await TicketReservationModel.aggregate([
       {
         $match: {
           venueId,
           ticketTypeId,
           status: "reserved",
-          expiresAt: { $gt: new Date() },
+          expiresAt: { $gt: currentTime },
         },
       },
       {
@@ -159,12 +166,18 @@ class ticketReservationService {
       return 0;
     }
 
+    let totalTicketsReleased = 0;
+
     for (const reservation of reservations) {
       try {
         await EventTicketService.increaseRemainingCount(
           reservation.venueId,
           reservation.ticketTypeId,
           reservation.quantity
+        );
+        totalTicketsReleased += reservation.quantity;
+        console.log(
+          `Released ${reservation.quantity} tickets for venue ${reservation.venueId} and ticket type ${reservation.ticketTypeId}`
         );
       } catch (error) {
         console.error(
@@ -180,9 +193,10 @@ class ticketReservationService {
   };
 
   cleanupExpiredReservations = async () => {
+    const currentTime = this.createMinutePrecisionDate();
     const expiredReservations = await TicketReservationModel.find({
       status: "reserved",
-      expiresAt: { $lt: new Date() },
+      expiresAt: { $lt: currentTime },
     });
 
     if (expiredReservations.length === 0) {
@@ -209,7 +223,7 @@ class ticketReservationService {
 
     const result = await TicketReservationModel.deleteMany({
       status: "reserved",
-      expiresAt: { $lt: new Date() },
+      expiresAt: { $lt: currentTime },
     });
 
     console.log(
@@ -256,6 +270,36 @@ class ticketReservationService {
       availableTickets: actualAvailable,
       canReserve: requestedQuantity <= actualAvailable,
     };
+  };
+
+  validateTicketsAvailability = async (
+    selectedTickets: any[]
+  ): Promise<boolean> => {
+    for (const ticketGroup of selectedTickets) {
+      const venueId = new mongoose.Types.ObjectId(ticketGroup._id);
+      const availableTickets =
+        await EventTicketService.getAvailableTicketsCount(venueId);
+
+      for (const ticket of ticketGroup.ticketTypes) {
+        const ticketTypeId = new mongoose.Types.ObjectId(ticket._id);
+        const requestedQuantity = ticket.count;
+
+        const currentReserved = await this.getReservedQuantity(
+          venueId,
+          ticketTypeId
+        );
+        const actualAvailable =
+          (availableTickets[ticket._id]?.quantity || 0) - currentReserved;
+
+        if (requestedQuantity > actualAvailable) {
+          throw new BadRequestException(
+            `Not enough tickets available for ${ticket.type}. Available: ${actualAvailable}, Requested: ${requestedQuantity}`
+          );
+        }
+      }
+    }
+
+    return true;
   };
 }
 
