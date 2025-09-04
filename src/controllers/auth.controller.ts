@@ -185,6 +185,9 @@ class authController {
         nextResetAt: updateData.OTPRequestCountResetAt,
       });
 
+      if (process.env.MAIN_ENVIRONMENT !== "development") {
+        await WhatsappService.sendOTPMessage(OTP, phone);
+      }
       res.status(200).send({
         message: "OTP sent successfully",
         OTPRequestCount: updateData.OTPRequestCount,
