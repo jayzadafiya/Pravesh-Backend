@@ -8,6 +8,7 @@ import { TransactionService } from "../services/transaction.service";
 import { ITransaction } from "../interfaces/transaction.interface";
 import { UserService } from "../services/user.service";
 import { EventTicketService } from "../services/event-ticket.service";
+import { TicketReservationService } from "../services/ticket-reservation.service";
 import mongoose from "mongoose";
 
 class paymentController {
@@ -169,29 +170,36 @@ class paymentController {
       }
 
       for (const ticketGroup of selectedTickets) {
-        const venueId = ticketGroup._id;
         const ticketTypes = ticketGroup.ticketTypes;
-        const availableTickets =
-          await EventTicketService.getAvailableTicketsCount(
-            new mongoose.Types.ObjectId(venueId)
-          );
 
         for (const ticket of ticketTypes) {
-          const availableQuantity = availableTickets[ticket._id]?.quantity || 0;
-          if (ticket.count > availableQuantity) {
+          if (ticket.count > 10) {
             throw new BadRequestException(
-              `Not enough availability for ticket type: ${ticket.type}`
+              "You cannot purchase more than 10 tickets."
             );
           }
         }
+      }
+
+      const orderId = CashFreeService.generateOrderId();
+
+      try {
+        await TicketReservationService.reserveTickets(
+          new mongoose.Types.ObjectId(userId),
+          orderId,
+          selectedTickets,
+          5
+        );
+      } catch (reservationError: any) {
+        throw new BadRequestException(
+          `Failed to reserve tickets: ${reservationError.message}`
+        );
       }
 
       const user = await UserService.getUserById(userId);
       if (!user) {
         throw new BadRequestException("User not found");
       }
-
-      const orderId = CashFreeService.generateOrderId();
 
       const cashfreeOrder = await CashFreeService.createPaymentOrder(
         amount,
@@ -205,6 +213,16 @@ class paymentController {
         }
       );
 
+      const createMinutePrecisionDate = (minutesFromNow: number = 0): Date => {
+        const now = new Date();
+        now.setSeconds(0, 0); // Set seconds and milliseconds to 0
+        if (minutesFromNow > 0) {
+          now.setMinutes(now.getMinutes() + minutesFromNow);
+        }
+        return now;
+      };
+
+      const reservationExpiresAt = createMinutePrecisionDate(5);
       res.status(200).send({
         success: true,
         orderId: orderId,
@@ -212,9 +230,24 @@ class paymentController {
         orderToken: cashfreeOrder.order_token,
         amount: amount,
         currency: currency,
+        reservationExpiresAt: reservationExpiresAt,
       });
     } catch (error: any) {
       console.error("Error creating Cashfree payment order:", error);
+
+      if (req.user?.id) {
+        try {
+          await TicketReservationService.cancelReservationsByUserId(
+            new mongoose.Types.ObjectId(req.user.id)
+          );
+        } catch (cleanupError) {
+          console.error(
+            "Failed to cleanup reservations after payment order creation failure:",
+            cleanupError
+          );
+        }
+      }
+
       res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
@@ -224,7 +257,8 @@ class paymentController {
     res: Response
   ) => {
     try {
-      const { orderId, selectedTickets, referenceId, paymentMode } = req.body;
+      const { orderId, selectedTickets, referenceId, paymentMode, eventId } =
+        req.body;
 
       const userId = req.user?.id;
 
@@ -246,6 +280,7 @@ class paymentController {
       );
 
       if (!apiVerification.isValid) {
+        await TicketReservationService.cancelReservationsByOrderId(orderId);
         throw new BadRequestException(
           `Payment verification failed: ${
             apiVerification.error || "Unknown error"
@@ -254,10 +289,18 @@ class paymentController {
       }
 
       if (!apiVerification.isPaid) {
+        await TicketReservationService.cancelReservationsByOrderId(orderId);
         throw new BadRequestException(
           `Payment not successful. Status: ${apiVerification.status}`
         );
       }
+
+      // STEP 2: Confirm reservations (this will delete them since payment is successful)
+      const confirmationResult =
+        await TicketReservationService.confirmReservations(orderId);
+      console.log(
+        `Confirmed and removed ${confirmationResult.deletedCount} reservations for order: ${orderId}`
+      );
 
       const user = await UserService.getUserById(userId);
       if (!user) {
@@ -269,12 +312,17 @@ class paymentController {
         selectedTickets
       );
 
+      if (!newTickets?.length) {
+        throw new BadRequestException("Tickets are not created");
+      }
+
       const verifiedOrderData = apiVerification.orderData;
 
       const transactionData = {
         user: userId,
         orderId: orderId,
         paymentId: verifiedOrderData.cf_order_id || referenceId,
+        event: new mongoose.Types.ObjectId(newTickets[0].event),
         paymentGateway: "cashfree" as const,
         status: "paid" as const,
         currency: verifiedOrderData.order_currency || "INR",
@@ -314,26 +362,6 @@ class paymentController {
 
       setImmediate(async () => {
         try {
-          await Promise.all(
-            selectedTickets.map((ticketGroup: any) =>
-              Promise.all(
-                ticketGroup.ticketTypes.map((ticketType: any) => {
-                  console.log(
-                    "Decreasing ticket count:",
-                    new mongoose.Types.ObjectId(ticketGroup._id),
-                    new mongoose.Types.ObjectId(ticketType._id),
-                    ticketType.count
-                  );
-                  return EventTicketService.decreaseRemainingCount(
-                    new mongoose.Types.ObjectId(ticketGroup._id),
-                    new mongoose.Types.ObjectId(ticketType._id),
-                    ticketType.count
-                  );
-                })
-              )
-            )
-          );
-
           const createdTickets = await UserTicketService.getAssignTickets(
             new mongoose.Types.ObjectId(userId)
           );
@@ -374,6 +402,20 @@ class paymentController {
       });
     } catch (error: any) {
       console.error("Error verifying Cashfree payment:", error);
+
+      if (req.body?.orderId) {
+        try {
+          await TicketReservationService.cancelReservationsByOrderId(
+            req.body.orderId
+          );
+        } catch (cleanupError) {
+          console.error(
+            "Failed to cleanup reservations after payment verification failure:",
+            cleanupError
+          );
+        }
+      }
+
       res.status(error.statusCode || 500).send({ message: error.message });
     }
   };

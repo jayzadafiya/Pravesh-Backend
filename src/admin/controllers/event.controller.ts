@@ -16,7 +16,7 @@ class adminEventController {
     }
   };
 
-  getAllEvents = async (req: Request, res: Response) => {
+  getEvents = async (req: Request, res: Response) => {
     try {
       const events = await AdminEventService.getEventList();
       res.status(200).json(events);
@@ -75,6 +75,36 @@ class adminEventController {
       if (!event) return res.status(404).json({ message: "Event not found" });
 
       res.status(200).json({ message: "Partner removed", event });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getEventStats = async (req: Request, res: Response) => {
+    try {
+      const stats = await AdminEventService.getEventStats();
+      res.status(200).json(stats);
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getAllEvents = async (req: Request, res: Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 1;
+      const result = await AdminEventService.getAllEventList(page, limit);
+      res.status(200).json(result);
+    } catch (error: any) {
+      console.error("Error fetching events:", error);
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
+
+  getTicketsAndRevenueChartData = async (req: Request, res: Response) => {
+    try {
+      const data = await AdminEventService.getTicketsAndRevenueChartData();
+      res.status(200).json({ data });
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }

@@ -12,7 +12,7 @@ class userTicketService {
       .populate("event")
       .populate({
         path: "venue",
-        select: "venue ticketTypes",
+        select: "venue ticketTypes date",
       })
       .populate({
         path: "transaction",
@@ -45,6 +45,7 @@ class userTicketService {
         venue: {
           _id: venue?._id,
           venue: venue?.venue,
+          date: venue?.date,
         },
         ticketType: ticket.ticketType,
         ticketTypeDetails: ticketTypeDetails && {
@@ -69,18 +70,23 @@ class userTicketService {
         if (!ticketType._id || !ticketType.quantity || !ticketType.count)
           continue;
 
-        let ticketId = generateTicketId();
+        for (let i = 0; i < ticketType.count; i++) {
+          let ticketId = generateTicketId();
 
-        ticketDocs.push({
-          _id: ticketId,
-          user: userId,
-          event: venueTicket.eventId,
-          venue: venueTicket._id,
-          ticketType: ticketType._id,
-          quantity: ticketType.count,
-          price: ticketType.price,
-          status,
-        });
+          ticketDocs.push({
+            _id: ticketId,
+            user: userId,
+            mainUser: userId,
+            event: venueTicket.eventId,
+            venue: venueTicket._id,
+            ticketType: ticketType._id,
+            quantity: 1,
+            price: ticketType.price,
+            status,
+            isTransferred: false,
+            transferHistory: [],
+          });
+        }
       }
     }
 
@@ -96,6 +102,116 @@ class userTicketService {
     return await UserTicketModel.findByIdAndUpdate(
       { _id: ticketId },
       { $set: { status: "Confirmed", transaction: transactionId } }
+    );
+  };
+
+  transferTicket = async (
+    ticketId: string,
+    fromUserId: mongoose.Types.ObjectId,
+    toUserId: mongoose.Types.ObjectId,
+    reason: "Split" | "Share" | "Transfer" = "Transfer"
+  ) => {
+    const ticket = await UserTicketModel.findById(ticketId);
+
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+
+    if (ticket.user.toString() !== fromUserId.toString()) {
+      throw new Error("Unauthorized: You don't own this ticket");
+    }
+
+    if (ticket.status !== "Confirmed") {
+      throw new Error("Only confirmed tickets can be transferred");
+    }
+
+    // Update the ticket with new owner and transfer history
+    const transferHistoryEntry = {
+      fromUser: fromUserId,
+      toUser: toUserId,
+      transferredAt: new Date(),
+      reason,
+    };
+
+    return await UserTicketModel.findByIdAndUpdate(
+      ticketId,
+      {
+        $set: {
+          user: toUserId,
+          isTransferred: true,
+          status: reason === "Transfer" ? "Confirmed" : "Transferred",
+        },
+        $push: {
+          transferHistory: transferHistoryEntry,
+        },
+      },
+      { new: true }
+    );
+  };
+
+  getTicketsByMainUser = async (mainUserId: mongoose.Types.ObjectId) => {
+    return await UserTicketModel.find({
+      mainUser: mainUserId,
+      status: { $in: ["Confirmed", "Transferred"] },
+    })
+      .populate("event")
+      .populate("venue")
+      .populate("user", "firstName lastName email phone")
+      .populate("transferHistory.fromUser", "firstName lastName email")
+      .populate("transferHistory.toUser", "firstName lastName email")
+      .lean();
+  };
+
+  getTransferableTickets = async (userId: mongoose.Types.ObjectId) => {
+    return await UserTicketModel.find({
+      user: userId,
+      status: "Confirmed",
+      quantity: 1, // Only individual tickets can be transferred
+    })
+      .populate("event", "name startDate mainImage")
+      .populate("venue", "venue")
+      .populate({
+        path: "venue",
+        populate: {
+          path: "ticketTypes",
+          select: "type",
+        },
+      })
+      .lean();
+  };
+
+  getEventTicketByUser = async (
+    event: mongoose.Types.ObjectId,
+    user: mongoose.Types.ObjectId
+  ) => {
+    const events: any = await UserTicketModel.find({ event, user })
+      .populate("user")
+      .populate("transaction")
+      .lean();
+
+    return events.map((ele: any) => {
+      return {
+        _id: ele._id,
+        userId: ele.user._id,
+        firatName: ele.user.firstName,
+        lastName: ele.user.lastName,
+        ticketType: ele.ticketType,
+        quantity: ele.quantity,
+        price: ele.price,
+        status: ele.status,
+        transaction: ele.transaction.paymentId,
+        checkedInAt: ele.checkedInAt,
+      };
+    });
+  };
+  checkedInUser = async (userTicketIds: [string]) => {
+    return await UserTicketModel.updateMany(
+      {
+        _id: {
+          $in: userTicketIds,
+        },
+      },
+      { checkedInAt: Date.now() }
     );
   };
 }

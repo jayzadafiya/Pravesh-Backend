@@ -17,22 +17,25 @@ class eventTicketService {
     return getOne(VenueTicketModel, venueId);
   };
 
-  getEventTicketDetails = async (
-    eventId: string
-  ): Promise<{ eventTicket: IEventTicket; venueTickets: IVenueTicket[] }> => {
-    const eventTicket = await EventTicketModel.findOne({
-      event: eventId,
-    }).populate("event", "name");
-    if (!eventTicket) {
-      throw new BadRequestException("Event ticket not found");
-    }
+  getEventTicketDetails = async (eventId: string) => {
+    console.log(eventId);
+    const eventTicket: any = (await EventTicketModel.findOne({
+      event: new mongoose.Types.ObjectId(eventId),
+    }).populate("event", "name")) as any;
+    // if (!eventTicket) {
+    //   throw new BadRequestException("Event ticket not found");
+    // }
 
-    const venueTickets = await VenueTicketModel.find({
-      eventTicket: eventTicket._id,
-    });
-    if (!venueTickets) {
-      throw new BadRequestException("Venue tickets not found");
+    let venueTickets = {};
+    if (eventTicket) {
+      venueTickets = await VenueTicketModel.find({
+        eventTicket: eventTicket?._id,
+      });
     }
+    console.log(venueTickets);
+    // if (!venueTickets) {
+    //   throw new BadRequestException("Venue tickets not found");
+    // }
 
     return { eventTicket, venueTickets };
   };
@@ -67,7 +70,25 @@ class eventTicketService {
       eventTicket,
       venue,
       date,
+      _id,
     });
+    if (!_id) {
+      const newVenueTicket = new VenueTicketModel({
+        eventTicket,
+        venue,
+        address,
+        date,
+        ticketTypes,
+      });
+
+      const saved = await newVenueTicket.save();
+      if (!saved) {
+        throw new BadRequestException("Failed to create venue ticket");
+      }
+
+      return saved as IVenueTicket;
+    }
+
     const venueTicket = await upsertOne(
       VenueTicketModel,
       { _id },
@@ -116,6 +137,30 @@ class eventTicketService {
 
     if (result.modifiedCount === 0) {
       throw new Error("Not enough tickets available or ticket not found.");
+    }
+
+    return result;
+  };
+
+  increaseRemainingCount = async (
+    venueTicketId: mongoose.Types.ObjectId,
+    ticketTypeId: mongoose.Types.ObjectId,
+    quantity: number
+  ) => {
+    const result = await VenueTicketModel.updateOne(
+      {
+        _id: venueTicketId,
+        "ticketTypes._id": ticketTypeId,
+      },
+      {
+        $inc: {
+          "ticketTypes.$.quantity": quantity,
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new Error("Ticket type not found or failed to increase count.");
     }
 
     return result;

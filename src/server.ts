@@ -13,6 +13,7 @@ import router from "./routers/v1.router";
 import globalErrorHandler from "./middleware/error-handler.middleware";
 import connectDB from "./config/db.config";
 import "./cron/pingJob";
+import "./cron/ticket-reservation-cleanup";
 import { Server } from "http";
 import {
   securityConfig,
@@ -53,7 +54,6 @@ async function startServer() {
 
     const app = express();
 
-    // Security: Trust proxy for accurate IP addresses behind reverse proxy
     // app.set("trust proxy", getTrustedProxies());
 
     // Security: Helmet for setting various HTTP headers
@@ -67,7 +67,7 @@ async function startServer() {
     );
     // Security: Enhanced CORS configuration (MUST be before rate limiting)
     app.use(
-     cors({
+      cors({
         origin: function (origin, callback) {
           // Allow requests with no origin (mobile apps, curl, etc.)
           if (!origin) return callback(null, true);
@@ -107,7 +107,7 @@ async function startServer() {
     app.use(
       hpp({
         whitelist: securityConfig.hppWhitelist,
-     })
+      })
     );
 
     // Security: Cookie parser with secure options
@@ -206,16 +206,16 @@ async function startServer() {
         }
 
         // Security: Block requests with suspicious headers
-        const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
-        for (const header of suspiciousHeaders) {
-          if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
-            console.warn(
-              `🚨 Suspicious header detected: ${header} from ${req.ip}`
-            );
-            res.status(403).json({ error: "Forbidden" });
-            return;
-          }
-        }
+        // const suspiciousHeaders = ["x-forwarded-host", "x-real-ip"];
+        // for (const header of suspiciousHeaders) {
+        //   if (req.get(header) && !process.env.ALLOW_PROXY_HEADERS) {
+        //     console.warn(
+        //       `🚨 Suspicious header detected: ${header} from ${req.ip}`
+        //     );
+        //     res.status(403).json({ error: "Forbidden" });
+        //     return;
+        //   }
+        // }
 
         res.on("finish", () => {
           const duration = Date.now() - start;
@@ -317,7 +317,6 @@ async function startServer() {
     app.get(
       "/api/v1/security/status",
       (req: express.Request, res: express.Response) => {
-        // Only allow in development or with proper authentication
         if (
           process.env.MAIN_ENVIRONMENT === "production" &&
           !req.headers.authorization
@@ -358,7 +357,6 @@ async function startServer() {
       });
     });
 
-    // Security: Enhanced global error handler
     app.use(
       (
         err: Error,
@@ -366,7 +364,6 @@ async function startServer() {
         res: express.Response,
         next: express.NextFunction
       ) => {
-        // Log security-related errors
         if (
           err.message.includes("CORS") ||
           err.message.includes("rate limit") ||
@@ -397,7 +394,7 @@ async function startServer() {
       console.log(
         `🌍 Environment: ${process.env.MAIN_ENVIRONMENT || "development"}`
       );
-      restartCount = 0; // Reset restart count on successful start
+      restartCount = 0;
     });
 
     // Handle server errors

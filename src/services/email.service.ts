@@ -400,6 +400,60 @@ class emailService {
 
     await transporter.sendMail(mailOptions);
   };
+
+  sendOTP = async (to: string, otp: string) => {
+    try {
+      const emailContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #333; margin: 0;">Ticket Transfer Verification</h1>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+              <p style="color: #666; font-size: 16px; line-height: 1.5; margin: 0 0 20px 0;">
+                Hello,
+              </p>
+              <p style="color: #666; font-size: 16px; line-height: 1.5; margin: 0 0 20px 0;">
+                You have received a ticket transfer request. Please use the following OTP to verify and complete the transfer:
+              </p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; text-align: center; margin: 20px 0;">
+                <h2 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 3px;">${otp}</h2>
+                <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">
+                  This OTP is valid for 10 minutes
+                </p>
+              </div>
+              
+              <p style="color: #666; font-size: 16px; line-height: 1.5; margin: 0 0 20px 0;">
+                If you didn't request this ticket transfer, please ignore this email.
+              </p>
+            </div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
+              <p style="color: #999; font-size: 12px; margin: 0;">
+                This is an automated message from Pravesh Events. Please do not reply to this email.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const info = await transporter.sendMail({
+        from: `"Pravesh Events" <${process.env.PRAVESH_INFO_EMAIL}>`,
+        to,
+        subject: "Ticket Transfer Verification OTP",
+        html: emailContent,
+      });
+
+      console.log(`OTP email sent: ${info.messageId}`);
+    } catch (error: any) {
+      console.error(`Error sending OTP email: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to send OTP email: ${error.message}`
+      );
+    }
+  };
 }
 
 export const EmailService = new emailService();

@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { ContributorService } from "../services/contributor.service";
 import { BadRequestException, NotFoundException } from "../utils/exceptions";
+import { AdminEventService } from "../admin/services/event.service";
+import mongoose from "mongoose";
 
 export const addContributor = async (
   req: Request,
@@ -266,3 +268,26 @@ export const getContributorEvents = async (
     });
   }
 };
+
+export const getContributorTodayEvent = async(req:Request,res:Response)=>{
+
+  try {
+    const {startDate,endDate,organizationId} = req.body
+
+    if(!organizationId ){
+      throw new BadRequestException("Provide needed fileds")
+    }
+    const events = await AdminEventService.getTodayEvent(new mongoose.Types.ObjectId(organizationId))
+
+    return res.status(200).json({
+      success:true,
+      data:events
+    })
+    
+  } catch (error:any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}

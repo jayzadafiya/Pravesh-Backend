@@ -9,6 +9,12 @@ const TransactionSchema: Schema = new Schema<ITransaction>(
       required: true,
       index: true,
     },
+    event: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+      index: true,
+    },
     // Generic payment fields (works for both Razorpay and Cashfree)
     orderId: {
       type: String,

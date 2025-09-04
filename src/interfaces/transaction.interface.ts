@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface ITransaction extends Document {
   _id: mongoose.Types.ObjectId;
   user: mongoose.Types.ObjectId;
+  event: mongoose.Types.ObjectId;
   // Generic payment fields (works for both Razorpay and Cashfree)
   orderId: string;
   paymentId?: string;

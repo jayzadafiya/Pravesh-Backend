@@ -18,6 +18,13 @@ authRouter.post(
 authRouter.post("/verifyOTP", AuthController.verifyOtp);
 
 authRouter.post(
+  "/resend-otp",
+  validateLogin,
+  validateRequest,
+  AuthController.resendOtp
+);
+
+authRouter.post(
   "/resend-verification-email",
   protect,
   AuthController.sendResetEmail as any

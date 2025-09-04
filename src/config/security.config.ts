@@ -128,6 +128,7 @@ export const securityConfig = {
       "https://praveshnavratri.netlify.app",
       "https://praveshevent.netlify.app",
       "https://praveshadmin.netlify.app",
+      "https://dev-pravesh.netlify.app",
       /\.pravesh\.events$/,
       /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
     ],
