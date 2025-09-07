@@ -28,6 +28,10 @@ organizationRouter.get("/event/:id", AdminEventController.getEvent);
 organizationRouter.get("/get-event-list", AdminEventController.getEvents);
 
 organizationRouter.get("/get-all-events", AdminEventController.getAllEvents);
+organizationRouter.get(
+  "/event-details/:eventId",
+  OrganizationController.getEventTicketsDetails
+);
 
 organizationRouter.get(
   "/get-tickets-graph-data",

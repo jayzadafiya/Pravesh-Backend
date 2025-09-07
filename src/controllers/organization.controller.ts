@@ -205,6 +205,25 @@ class organizationController {
       });
     }
   };
+
+  getEventTicketsDetails = async (req: Request, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const result = await OrganizationService.getEventTicketsDetails(eventId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error retrieving event tickets details:", error);
+
+      res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || "Failed to retrieve event tickets details",
+      });
+    }
+  };
 }
 
 export const OrganizationController = new organizationController();

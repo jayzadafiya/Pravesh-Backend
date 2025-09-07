@@ -5,6 +5,7 @@ import OrganizationModel from "../models/Organization.model";
 import { createOne, getOne, updateOne } from "../utils/helper";
 import { IEvent } from "../interfaces/event.interface";
 import { BadRequestException } from "../utils/exceptions";
+import EventTicketModel from "../models/Event-ticket.model";
 
 class organizationService {
   getEventBanner = async () => {
@@ -31,7 +32,7 @@ class organizationService {
     const currentDate = new Date();
     return await EventModel.findOne({
       slug,
-      endDate: { $gte: currentDate }, // Only return event if it hasn't ended yet
+      endDate: { $gte: currentDate },
     });
   };
 
@@ -39,16 +40,14 @@ class organizationService {
     const currentDate = new Date();
     return await EventModel.findOne({
       _id: new mongoose.Types.ObjectId(eventId),
-      endDate: { $gte: currentDate }, // Only return event if it hasn't ended yet
+      endDate: { $gte: currentDate },
     });
   };
 
-  // Method to get event by ID without date restriction (for admin purposes)
   getEventByIdAdmin = async (eventId: string): Promise<IEvent | null> => {
     return await getOne(EventModel, new mongoose.Types.ObjectId(eventId));
   };
 
-  // Method to get all active events
   getActiveEvents = async () => {
     const currentDate = new Date();
     return await EventModel.find({
@@ -127,6 +126,25 @@ class organizationService {
       }
       console.error("Error retrieving event password:", error);
       throw new BadRequestException("Failed to retrieve event password");
+    }
+  };
+
+  getEventTicketsDetails = async (eventId: string) => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        throw new BadRequestException("Invalid event ID");
+      }
+      const event = await EventTicketModel.findOne({
+        event: new mongoose.Types.ObjectId(eventId),
+      });
+      if (!event) {
+        throw new BadRequestException("Event not found");
+      }
+
+      return event;
+    } catch (error) {
+      console.error("Error retrieving event tickets details:", error);
+      throw new BadRequestException("Failed to retrieve event tickets details");
     }
   };
 }
