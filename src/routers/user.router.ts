@@ -6,6 +6,7 @@ const userRouter = express.Router();
 
 userRouter.get("/profile", protect, UserController.getUserByToken);
 userRouter.get("/cart", protect, UserController.getCartItems as any);
+userRouter.get("/cart-summary", protect, UserController.getCartSummary as any);
 userRouter.get(
   "/cart-item/:venueId",
   protect,

@@ -186,6 +186,44 @@ class organizationController {
   updateOrCreatePartners = async (req: Request, res: Response) => {
     return this.upsertEntity(req, res, "partner");
   };
+
+  getEventPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { eventId } = req.params;
+      const result = await OrganizationService.getEventPassword(eventId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error retrieving event password:", error);
+
+      res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || "Failed to retrieve event password",
+      });
+    }
+  };
+
+  getEventTicketsDetails = async (req: Request, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const result = await OrganizationService.getEventTicketsDetails(eventId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      console.error("Error retrieving event tickets details:", error);
+
+      res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || "Failed to retrieve event tickets details",
+      });
+    }
+  };
 }
 
 export const OrganizationController = new organizationController();

@@ -6,6 +6,7 @@ const TicketTypeSchema = new Schema(
     type: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
+    totalTicket: { type: Number },
   },
   {
     versionKey: false,
