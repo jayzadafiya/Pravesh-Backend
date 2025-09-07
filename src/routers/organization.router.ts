@@ -3,7 +3,12 @@ import { OrganizationController } from "../controllers/organization.controller";
 import protect from "../middleware/auth.middleware";
 import { upload } from "../config/multer.config";
 import { AdminEventController } from "../admin/controllers/event.controller";
-import { getAllTransaction, getAllUserStats, getAllUsersWithTickets, getTransactionStats } from "../admin/controllers/user.controllers";
+import {
+  getAllTransaction,
+  getAllUserStats,
+  getAllUsersWithTickets,
+  getTransactionStats,
+} from "../admin/controllers/user.controllers";
 
 const organizationRouter = express.Router();
 
@@ -24,10 +29,12 @@ organizationRouter.get("/get-event-list", AdminEventController.getEvents);
 
 organizationRouter.get("/get-all-events", AdminEventController.getAllEvents);
 
-organizationRouter.get("/get-tickets-graph-data", AdminEventController.getTicketsAndRevenueChartData);
+organizationRouter.get(
+  "/get-tickets-graph-data",
+  AdminEventController.getTicketsAndRevenueChartData
+);
 
 organizationRouter.get("/event-stats", AdminEventController.getEventStats);
-
 
 //TODO: Add admin role auth
 organizationRouter.post(
@@ -89,24 +96,11 @@ organizationRouter.delete(
   AdminEventController.removePartnerById as any
 );
 
-organizationRouter.get(
-  "/user-tickets",
-  getAllUsersWithTickets
-);
+organizationRouter.get("/user-tickets", getAllUsersWithTickets);
 
-organizationRouter.get(
-  "/user-tickets-stats",
-  getAllUserStats
-);
+organizationRouter.get("/user-tickets-stats", getAllUserStats);
+organizationRouter.get("/transaction-list", getAllTransaction);
 
-organizationRouter.get(
-  "/transaction-list",
-  getAllTransaction
-);
-
-organizationRouter.get(
-  "/transaction-stat",
-  getTransactionStats
-);
+organizationRouter.get("/transaction-stat", getTransactionStats);
 
 export default organizationRouter;

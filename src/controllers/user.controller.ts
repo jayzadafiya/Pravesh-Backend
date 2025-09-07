@@ -9,6 +9,8 @@ import { CloudinaryService } from "../services/cloudinary.service";
 import { AuthService } from "../services/auth.service";
 import { EmailService } from "../services/email.service";
 import { OrganizationService } from "../services/organization.service";
+import CartModel from "../models/Cart.model";
+import VenueTicketModel from "../models/Venue-ticket.model";
 
 class userController {
   getUserByToken = async (req: any, res: any) => {
@@ -46,6 +48,100 @@ class userController {
     );
 
     res.status(200).send(assignTickets);
+  };
+
+  getCartSummary = async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const userCart = await CartModel.findById(
+        new mongoose.Types.ObjectId(userId)
+      ).lean();
+
+      if (!userCart || !userCart.items || userCart.items.length === 0) {
+        return res.status(200).json({
+          totalTickets: 0,
+          totalPrice: 0,
+          ticketsByType: [],
+          success: true,
+        });
+      }
+
+      let totalTickets = 0;
+      let totalPrice = 0;
+      const ticketsByType = [];
+
+      for (const cartItem of userCart.items) {
+        if (!cartItem.tickets || Object.keys(cartItem.tickets).length === 0) {
+          continue;
+        }
+
+        const venueTicket: any = await VenueTicketModel.findById(
+          cartItem.venueId
+        )
+          .populate({
+            path: "eventTicket",
+            populate: { path: "event" },
+          })
+          .lean();
+
+        if (!venueTicket) {
+          continue;
+        }
+        const event = venueTicket.eventTicket?.event;
+        const eventName = event?.name || "Unknown Event";
+
+        for (const [ticketTypeId, quantity] of Object.entries(
+          cartItem.tickets
+        )) {
+          const ticketType = venueTicket.ticketTypes?.find(
+            (tt: any) => tt._id.toString() === ticketTypeId
+          );
+
+          if (!ticketType) {
+            continue;
+          }
+
+          const price = ticketType.price || 0;
+          const numQuantity = Number(quantity);
+
+          if (numQuantity <= 0) {
+            continue;
+          }
+
+          totalTickets += numQuantity;
+          totalPrice += numQuantity * price;
+
+          ticketsByType.push({
+            venueId: venueTicket._id,
+            venueName: venueTicket.venue,
+            eventName: eventName,
+            ticketTypeId: ticketTypeId,
+            ticketType: ticketType.type,
+            quantity: numQuantity,
+            unitPrice: price,
+            totalPrice: numQuantity * price,
+          });
+        }
+      }
+
+      res.status(200).json({
+        totalTickets,
+        totalPrice,
+        ticketsByType,
+        success: true,
+      });
+    } catch (error: any) {
+      console.error("Error getting cart summary:", error);
+      res.status(error.statusCode || 500).send({
+        message: error.message,
+        success: false,
+      });
+    }
   };
 
   getSelectedTickets = async (req: AuthRequest, res: Response) => {
