@@ -45,12 +45,19 @@ class eventTicketService {
     isMultiPlace: boolean,
     isDifferentPrice: boolean,
     generalPrice: number,
+    onwardPrice: number,
     generalQuantity: number
   ): Promise<IEventTicket> => {
     const ticket = await upsertOne(
       EventTicketModel,
       { event },
-      { isMultiPlace, isDifferentPrice, generalPrice, generalQuantity }
+      {
+        isMultiPlace,
+        isDifferentPrice,
+        generalPrice,
+        onwardPrice,
+        generalQuantity,
+      }
     );
     if (!ticket) {
       throw new BadRequestException("Ticket not found");

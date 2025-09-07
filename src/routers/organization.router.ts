@@ -103,4 +103,11 @@ organizationRouter.get("/transaction-list", getAllTransaction);
 
 organizationRouter.get("/transaction-stat", getTransactionStats);
 
+organizationRouter.get(
+  "/event/:eventId/password",
+  // protect,
+  // param("eventId").isMongoId().withMessage("Invalid event ID format"),
+  OrganizationController.getEventPassword
+);
+
 export default organizationRouter;

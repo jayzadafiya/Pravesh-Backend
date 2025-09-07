@@ -14,7 +14,6 @@ import { checkRole } from "../middleware/role.middleware";
 
 const router = Router();
 
-// Public routes
 router.post(
   "/register",
   createRegistrationValidation,
@@ -25,7 +24,6 @@ router.get("/event-types", OrganizerRegistrationController.getEventTypes);
 
 router.get("/audience-sizes", OrganizerRegistrationController.getAudienceSizes);
 
-// Admin routes (require authentication and admin role)
 router.get(
   "/",
   // protect,

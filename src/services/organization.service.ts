@@ -4,6 +4,7 @@ import EventModel from "../models/Event.model";
 import OrganizationModel from "../models/Organization.model";
 import { createOne, getOne, updateOne } from "../utils/helper";
 import { IEvent } from "../interfaces/event.interface";
+import { BadRequestException } from "../utils/exceptions";
 
 class organizationService {
   getEventBanner = async () => {
@@ -101,6 +102,32 @@ class organizationService {
 
     await event.save();
     return event[type];
+  };
+
+  getEventPassword = async (
+    eventId: string
+  ): Promise<{ eventPassword: string }> => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        throw new BadRequestException("Invalid event ID");
+      }
+
+      const event = await EventModel.findById(
+        new mongoose.Types.ObjectId(eventId)
+      ).select("+eventPassword");
+
+      if (!event) {
+        throw new BadRequestException("Event not found");
+      }
+
+      return { eventPassword: event.eventPassword };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error("Error retrieving event password:", error);
+      throw new BadRequestException("Failed to retrieve event password");
+    }
   };
 }
 

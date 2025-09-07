@@ -13,6 +13,7 @@ const EventTicketSchema: Schema = new Schema(
     isMultiPlace: { type: Boolean, default: false },
     isDifferentPrice: { type: Boolean, default: false },
     generalPrice: { type: Number },
+    onwardPrice: { type: Number },
     generalQuantity: { type: Number },
   },
   { timestamps: true }

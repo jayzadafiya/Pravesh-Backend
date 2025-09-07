@@ -12,6 +12,7 @@ class ticketController {
         isMultiPlace,
         isDifferentPrice,
         generalPrice,
+        onwardPrice,
         generalQuantity,
       } = req.body;
 
@@ -26,6 +27,7 @@ class ticketController {
         isMultiPlace,
         isDifferentPrice,
         generalPrice,
+        onwardPrice,
         generalQuantity
       );
 
