@@ -82,6 +82,7 @@ const EventSchema: Schema = new Schema(
       required: true,
       select: false,
     },
+    onwardPrice: { type: Number },
   },
   {
     timestamps: true,

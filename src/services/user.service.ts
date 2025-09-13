@@ -33,18 +33,8 @@ class userService {
 
       {
         $lookup: {
-          from: "eventtickets",
-          localField: "venue.eventTicket",
-          foreignField: "_id",
-          as: "eventTicket",
-        },
-      },
-      { $unwind: "$eventTicket" },
-
-      {
-        $lookup: {
           from: "events",
-          localField: "eventTicket.event",
+          localField: "venue.event",
           foreignField: "_id",
           as: "event",
         },

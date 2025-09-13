@@ -39,4 +39,5 @@ export interface IEvent extends Document {
   sponsors?: ISponsor[];
   partners?: IPartner[];
   status?: "upcoming" | "ongoing" | "completed";
+  onwardPrice?: number;
 }

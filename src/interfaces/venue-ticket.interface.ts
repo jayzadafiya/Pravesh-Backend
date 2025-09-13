@@ -10,7 +10,7 @@ export interface ITicketType extends Document {
 
 export interface IVenueTicket extends Document {
   _id: mongoose.Types.ObjectId;
-  eventTicket: string;
+  event: string;
   venue: string;
   address: string;
   date: Date;

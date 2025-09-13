@@ -15,9 +15,9 @@ const TicketTypeSchema = new Schema(
 
 const VenueTicketSchema: Schema = new Schema(
   {
-    eventTicket: {
+    event: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "EventTicket",
+      ref: "Event",
       required: true,
       index: true,
     },
@@ -31,9 +31,6 @@ const VenueTicketSchema: Schema = new Schema(
   }
 );
 
-VenueTicketSchema.index(
-  { eventTicket: 1, venue: 1, date: 1 },
-  { unique: true }
-);
+VenueTicketSchema.index({ event: 1, venue: 1, date: 1 }, { unique: true });
 
 export default mongoose.model<IVenueTicket>("VenueTicket", VenueTicketSchema);
