@@ -454,6 +454,34 @@ class emailService {
       );
     }
   };
+
+  sendOrganizationSetPasswordEmail = async (to: string, token: string) => {
+    try {
+      const ADMIN_FRONTEND_URL =
+        process.env.ADMIN_FRONTEND_URL || "http://localhost:3001";
+      const verifyUrl = `${ADMIN_FRONTEND_URL}/set-password?token=${token}`;
+
+      const templatePath = path.join(
+        __dirname,
+        "../templates/org-set-password.html"
+      );
+      let htmlTemplate = fs.readFileSync(templatePath, "utf8");
+
+      htmlTemplate = htmlTemplate.replace(/{{verifyUrl}}/g, verifyUrl);
+
+      const info = await transporter.sendMail({
+        from: `"Prevesh Events" <${process.env.PRAVESH_INFO_EMAIL}>`,
+        to,
+        subject: "Your Account Setup Link",
+        html: htmlTemplate,
+      });
+
+      console.log(`Message sent: ${info.messageId}`);
+    } catch (error: any) {
+      console.error(`Error sending email: ${error.message}`);
+      throw new BadRequestException(`Failed to send email: ${error.message}`);
+    }
+  };
 }
 
 export const EmailService = new emailService();
