@@ -84,15 +84,14 @@ class userController {
           cartItem.venueId
         )
           .populate({
-            path: "eventTicket",
-            populate: { path: "event" },
+            path: "event",
           })
           .lean();
 
         if (!venueTicket) {
           continue;
         }
-        const event = venueTicket.eventTicket?.event;
+        const event = venueTicket.event;
         const eventName = event?.name || "Unknown Event";
 
         for (const [ticketTypeId, quantity] of Object.entries(

@@ -5,12 +5,14 @@ import OrganizationModel from "../models/Organization.model";
 import { createOne, getOne, updateOne } from "../utils/helper";
 import { IEvent } from "../interfaces/event.interface";
 import { BadRequestException } from "../utils/exceptions";
-import EventTicketModel from "../models/Event-ticket.model";
+import VenueTicketModel from "../models/Venue-ticket.model";
 
 class organizationService {
   getEventBanner = async () => {
     const currentDate = new Date();
     return await EventModel.find({
+      verificationStatus: "approved",
+      isPublished: true,
       endDate: { $gte: currentDate },
     })
       .select("bannerImage name startDate location duration slug")
@@ -18,10 +20,11 @@ class organizationService {
       .limit(5);
   };
 
-  getEventPosters = async (isPublished = false) => {
+  getEventPosters = async () => {
     const currentDate = new Date();
     return await EventModel.find({
-      isPublished,
+      verificationStatus: "approved",
+      isPublished: true,
       endDate: { $gte: currentDate },
     })
       .select("posterImage slug name description ")
@@ -134,14 +137,14 @@ class organizationService {
       if (!mongoose.Types.ObjectId.isValid(eventId)) {
         throw new BadRequestException("Invalid event ID");
       }
-      const event = await EventTicketModel.findOne({
+      const venueTickets = await VenueTicketModel.find({
         event: new mongoose.Types.ObjectId(eventId),
       });
-      if (!event) {
-        throw new BadRequestException("Event not found");
+      if (!venueTickets || venueTickets.length === 0) {
+        throw new BadRequestException("No venue tickets found for this event");
       }
 
-      return event;
+      return venueTickets;
     } catch (error) {
       console.error("Error retrieving event tickets details:", error);
       throw new BadRequestException("Failed to retrieve event tickets details");

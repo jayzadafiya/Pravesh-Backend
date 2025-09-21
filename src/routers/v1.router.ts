@@ -8,6 +8,7 @@ import paymentRouter from "./payment.router";
 import organizerRegistrationRouter from "./organizer-registration.router";
 import contributorRouter from "./contributor.router";
 import ticketTransferRouter from "./ticket-transfer.router";
+import eventVerificationRouter from "./eventVerification.router";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use("/payment", paymentRouter);
 router.use("/organizer-registration", organizerRegistrationRouter);
 router.use("/contributors", contributorRouter);
 router.use("/ticket-transfer", ticketTransferRouter);
+router.use("/event-verification", eventVerificationRouter);
 
 router.get("/ping", (req, res) => {
   res.send("✅ Pong");

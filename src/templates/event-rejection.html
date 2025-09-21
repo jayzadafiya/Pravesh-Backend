@@ -1,0 +1,213 @@
+<!-- templates/event-rejection.html -->
+<body
+  style="
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+  "
+>
+  <table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    width="100%"
+    style="background-color: #f8f9fa"
+  >
+    <tr>
+      <td style="padding: 40px 20px">
+        <table
+          role="presentation"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          width="100%"
+          style="
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          "
+        >
+          <tr>
+            <td
+              style="
+                background: linear-gradient(
+                  135deg,
+                  #dc3545 0%,
+                  #c82333 50%,
+                  #bd2130 100%
+                );
+                padding: 40px 30px;
+                text-align: center;
+              "
+            >
+              <img
+                src="https://res.cloudinary.com/dpzd6gkt1/image/upload/v1752313723/pravesh_round-white_logo_xwwn4h.png"
+                alt="Prevesh"
+                width="100"
+                height="100"
+                style="display: block; margin: 0 auto; border-radius: 50%"
+              />
+
+              <h1
+                style="
+                  margin: 0;
+                  color: #ffffff;
+                  font-size: 32px;
+                  font-weight: 700;
+                "
+              >
+                Pravesh
+              </h1>
+              <p
+                style="
+                  margin: 8px 0 0 0;
+                  color: rgba(255, 255, 255, 0.9);
+                  font-size: 16px;
+                  font-weight: 500;
+                "
+              >
+                Event Verification Update
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 50px 40px 20px 40px">
+              <h2 style="text-align: center; color: #2d3748; font-size: 28px">
+                ⚠️ Event Not Approved
+              </h2>
+              <p style="text-align: center; color: #4a5568; font-size: 18px">
+                We regret to inform you that your event submission has been
+                reviewed and requires some changes.
+              </p>
+
+              <div
+                style="
+                  background-color: #fff5f5;
+                  border-radius: 12px;
+                  padding: 25px;
+                  margin: 30px 0;
+                "
+              >
+                <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 20px">
+                  📅 Event Details
+                </h3>
+                <p style="margin: 8px 0; color: #4a5568; font-size: 16px">
+                  <strong>Event Name:</strong> {{eventName}}
+                </p>
+                <p style="margin: 8px 0; color: #4a5568; font-size: 16px">
+                  <strong>Organization:</strong> {{organizationName}}
+                </p>
+                <p style="margin: 8px 0; color: #4a5568; font-size: 16px">
+                  <strong>Status:</strong>
+                  <span style="color: #dc3545; font-weight: 600">Rejected</span>
+                </p>
+              </div>
+
+              <div
+                style="
+                  background-color: #f8f9fa;
+                  border-radius: 12px;
+                  padding: 25px;
+                  margin: 30px 0;
+                  border: 1px solid #e2e8f0;
+                "
+              >
+                <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px">
+                  📝 Feedback from Review Team
+                </h3>
+                <div
+                  style="
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    padding: 15px;
+                  "
+                >
+                  <p
+                    style="
+                      margin: 0;
+                      color: #4a5568;
+                      font-size: 16px;
+                      line-height: 1.5;
+                    "
+                  >
+                    {{rejectionMessage}}
+                  </p>
+                </div>
+              </div>
+
+              <p style="text-align: center; color: #718096; font-size: 16px">
+                Please review the feedback above and make the necessary changes
+                to your event. Once updated, you can resubmit it for
+                verification.
+              </p>
+
+              <div style="text-align: center; margin: 30px 0">
+                <a
+                  href="{{dashboardUrl}}"
+                  style="
+                    display: inline-block;
+                    background: linear-gradient(
+                      135deg,
+                      #dc3545 0%,
+                      #c82333 100%
+                    );
+                    color: #fff;
+                    text-decoration: none;
+                    padding: 12px 30px;
+                    border-radius: 50px;
+                    font-size: 16px;
+                    font-weight: 600;
+                  "
+                  >Update Event</a
+                >
+              </div>
+
+              <div
+                style="
+                  background-color: #f7fafc;
+                  border-radius: 8px;
+                  padding: 20px;
+                  margin: 30px 0;
+                "
+              >
+                <p style="color: #4a5568; font-size: 14px; font-weight: 600">
+                  Need help with resubmission?
+                </p>
+                <p style="color: #718096; font-size: 14px">
+                  Contact our support team if you need clarification on the
+                  feedback or assistance with updating your event.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td
+              style="
+                background-color: #f8f9fa;
+                padding: 30px 40px;
+                text-align: center;
+                border-top: 1px solid #e2e8f0;
+              "
+            >
+              <p style="margin: 0; color: #718096; font-size: 14px">
+                This is an automated message from Pravesh. Please do not reply
+                to this email.
+              </p>
+              <p style="margin: 8px 0 0; color: #a0aec0; font-size: 12px">
+                © 2025 Pravesh. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>

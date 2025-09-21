@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
-import { IEventTicket } from "../interfaces/event-ticket.interface";
 import {
   IVenueTicket,
   ITicketType,
   ICartEventTicket,
 } from "../interfaces/venue-ticket.interface";
-import EventTicketModel from "../models/Event-ticket.model";
 import VenueTicketModel from "../models/Venue-ticket.model";
 import { BadRequestException } from "../utils/exceptions";
 import { getOne, upsertOne } from "../utils/helper";
@@ -17,29 +15,16 @@ class eventTicketService {
     return getOne(VenueTicketModel, venueId);
   };
 
-  getEventTicketDetails = async (eventId: string) => {
+  getEventVenueTickets = async (eventId: string) => {
     console.log(eventId);
-    const eventTicket: any = (await EventTicketModel.findOne({
+    const venueTickets = await VenueTicketModel.find({
       event: new mongoose.Types.ObjectId(eventId),
-    }).populate("event", "name")) as any;
-    // if (!eventTicket) {
-    //   throw new BadRequestException("Event ticket not found");
-    // }
-
-    let venueTickets = {};
-    if (eventTicket) {
-      venueTickets = await VenueTicketModel.find({
-        eventTicket: eventTicket?._id,
-      });
-    }
-    console.log(venueTickets);
-    // if (!venueTickets) {
-    //   throw new BadRequestException("Venue tickets not found");
-    // }
-
-    return { eventTicket, venueTickets };
+    });
+    return { venueTickets };
   };
 
+  // Event ticket is now removed, venue tickets connect directly to events
+  // This method is kept for backward compatibility but just returns basic info
   createOrUpdateTicket = async (
     event: string,
     isMultiPlace: boolean,
@@ -47,41 +32,35 @@ class eventTicketService {
     generalPrice: number,
     onwardPrice: number,
     generalQuantity: number
-  ): Promise<IEventTicket> => {
-    const ticket = await upsertOne(
-      EventTicketModel,
-      { event },
-      {
-        isMultiPlace,
-        isDifferentPrice,
-        generalPrice,
-        onwardPrice,
-        generalQuantity,
-      }
-    );
-    if (!ticket) {
-      throw new BadRequestException("Ticket not found");
-    }
-    return ticket;
+  ): Promise<{ event: string; [key: string]: any }> => {
+    // Just return basic info since EventTicket model is removed
+    return {
+      event,
+      isMultiPlace,
+      isDifferentPrice,
+      generalPrice,
+      onwardPrice,
+      generalQuantity,
+    };
   };
 
   createOrUpdateVenueTicket = async (
     _id: string | undefined,
-    eventTicket: string,
+    event: string,
     venue: string,
     address: string,
     date: string,
     ticketTypes: ITicketType[]
   ): Promise<IVenueTicket> => {
     console.log("Creating or updating venue ticket", {
-      eventTicket,
+      event,
       venue,
       date,
       _id,
     });
     if (!_id) {
       const newVenueTicket = new VenueTicketModel({
-        eventTicket,
+        event,
         venue,
         address,
         date,
@@ -99,7 +78,7 @@ class eventTicketService {
     const venueTicket = await upsertOne(
       VenueTicketModel,
       { _id },
-      { eventTicket, venue, address, date, ticketTypes }
+      { event, venue, address, date, ticketTypes }
     );
     if (!venueTicket) {
       throw new BadRequestException("Venue ticket not found");

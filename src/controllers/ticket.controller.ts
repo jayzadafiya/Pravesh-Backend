@@ -39,23 +39,21 @@ class ticketController {
 
   upsertVenueTicket = async (req: Request, res: Response) => {
     try {
-      const { eventTicket, venue, address, date, ticketTypes, _id } = req.body;
+      const { event, venue, address, date, ticketTypes, _id } = req.body;
 
       const updatedTicket = await EventTicketService.createOrUpdateVenueTicket(
         _id,
-        eventTicket,
+        event,
         venue,
         address,
         moment(date).utc().startOf("day").format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
         ticketTypes
       );
 
-      if (!(eventTicket && date && venue)) {
-        throw new BadRequestException(
-          "Event ticket, date and venue are required"
-        );
-      } else if (!mongoose.Types.ObjectId.isValid(eventTicket)) {
-        throw new BadRequestException("Invalid Event Ticket ID format");
+      if (!(event && date && venue)) {
+        throw new BadRequestException("Event, date and venue are required");
+      } else if (!mongoose.Types.ObjectId.isValid(event)) {
+        throw new BadRequestException("Invalid Event ID format");
       }
 
       res.status(200).json({ updatedTicket });
@@ -76,11 +74,11 @@ class ticketController {
         throw new BadRequestException("Invalid Event ID format");
       }
 
-      const { eventTicket, venueTickets } =
-        await EventTicketService.getEventTicketDetails(eventId);
+      const { venueTickets } = await EventTicketService.getEventVenueTickets(
+        eventId
+      );
 
       res.status(200).json({
-        eventTicket,
         venueTickets,
       });
     } catch (error: any) {
