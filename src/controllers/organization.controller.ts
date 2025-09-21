@@ -18,10 +18,7 @@ class organizationController {
 
   getEventPosters = async (req: Request, res: Response) => {
     try {
-      const events = await Promise.all([
-        OrganizationService.getEventPosters(true),
-        OrganizationService.getEventPosters(),
-      ]);
+      const events = await Promise.all([OrganizationService.getEventPosters()]);
       res.status(200).send(events);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });

@@ -31,6 +31,11 @@ export interface IEvent extends Document {
   bannerImage: string;
   mainImage: string;
   isPublished: boolean;
+  verificationStatus: "draft" | "pending" | "approved" | "rejected";
+  verificationMessage: string;
+  verificationRequestedAt?: Date;
+  verificationProcessedAt?: Date;
+  verificationProcessedBy?: mongoose.Types.ObjectId;
   isDeleted: boolean;
   eventPassword: string;
   createdAt?: Date;

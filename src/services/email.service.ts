@@ -482,6 +482,89 @@ class emailService {
       throw new BadRequestException(`Failed to send email: ${error.message}`);
     }
   };
+
+  sendEventApprovalEmail = async (
+    to: string,
+    eventName: string,
+    organizationName: string,
+    eventId: string
+  ) => {
+    try {
+      const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+      const eventUrl = `${FRONTEND_URL}/events/${eventId}`;
+
+      const templatePath = path.join(
+        __dirname,
+        "../templates/event-approval.html"
+      );
+      let htmlTemplate = fs.readFileSync(templatePath, "utf8");
+
+      htmlTemplate = htmlTemplate.replace(/{{eventName}}/g, eventName);
+      htmlTemplate = htmlTemplate.replace(
+        /{{organizationName}}/g,
+        organizationName
+      );
+      htmlTemplate = htmlTemplate.replace(/{{eventUrl}}/g, eventUrl);
+
+      const info = await transporter.sendMail({
+        from: `"Prevesh Events" <${process.env.PRAVESH_INFO_EMAIL}>`,
+        to,
+        subject: `🎉 Your Event "${eventName}" Has Been Approved!`,
+        html: htmlTemplate,
+      });
+
+      console.log(`Event approval email sent: ${info.messageId}`);
+    } catch (error: any) {
+      console.error(`Error sending event approval email: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to send event approval email: ${error.message}`
+      );
+    }
+  };
+
+  sendEventRejectionEmail = async (
+    to: string,
+    eventName: string,
+    organizationName: string,
+    rejectionMessage: string
+  ) => {
+    try {
+      const ADMIN_FRONTEND_URL =
+        process.env.ADMIN_FRONTEND_URL || "http://localhost:3001";
+      const dashboardUrl = `${ADMIN_FRONTEND_URL}/dashboard`;
+
+      const templatePath = path.join(
+        __dirname,
+        "../templates/event-rejection.html"
+      );
+      let htmlTemplate = fs.readFileSync(templatePath, "utf8");
+
+      htmlTemplate = htmlTemplate.replace(/{{eventName}}/g, eventName);
+      htmlTemplate = htmlTemplate.replace(
+        /{{organizationName}}/g,
+        organizationName
+      );
+      htmlTemplate = htmlTemplate.replace(
+        /{{rejectionMessage}}/g,
+        rejectionMessage
+      );
+      htmlTemplate = htmlTemplate.replace(/{{dashboardUrl}}/g, dashboardUrl);
+
+      const info = await transporter.sendMail({
+        from: `"Prevesh Events" <${process.env.PRAVESH_INFO_EMAIL}>`,
+        to,
+        subject: `⚠️ Event "${eventName}" Requires Changes`,
+        html: htmlTemplate,
+      });
+
+      console.log(`Event rejection email sent: ${info.messageId}`);
+    } catch (error: any) {
+      console.error(`Error sending event rejection email: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to send event rejection email: ${error.message}`
+      );
+    }
+  };
 }
 
 export const EmailService = new emailService();

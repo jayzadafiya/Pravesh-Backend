@@ -49,6 +49,25 @@ const EventSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    verificationStatus: {
+      type: String,
+      enum: ["draft", "pending", "approved", "rejected"],
+      default: "draft",
+    },
+    verificationMessage: {
+      type: String,
+      default: "",
+    },
+    verificationRequestedAt: {
+      type: Date,
+    },
+    verificationProcessedAt: {
+      type: Date,
+    },
+    verificationProcessedBy: {
+      type: Types.ObjectId,
+      ref: "Organization",
+    },
     isDeleted: {
       type: Boolean,
       default: false,

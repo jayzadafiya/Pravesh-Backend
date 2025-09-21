@@ -11,6 +11,8 @@ class organizationService {
   getEventBanner = async () => {
     const currentDate = new Date();
     return await EventModel.find({
+      verificationStatus: "approved",
+      isPublished: true,
       endDate: { $gte: currentDate },
     })
       .select("bannerImage name startDate location duration slug")
@@ -18,10 +20,11 @@ class organizationService {
       .limit(5);
   };
 
-  getEventPosters = async (isPublished = false) => {
+  getEventPosters = async () => {
     const currentDate = new Date();
     return await EventModel.find({
-      isPublished,
+      verificationStatus: "approved",
+      isPublished: true,
       endDate: { $gte: currentDate },
     })
       .select("posterImage slug name description ")
