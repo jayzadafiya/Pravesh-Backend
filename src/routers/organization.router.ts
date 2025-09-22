@@ -9,6 +9,7 @@ import {
   getAllUsersWithTickets,
   getTransactionStats,
 } from "../admin/controllers/user.controllers";
+import adminProtect from "../middleware/admin-auth.middleware";
 
 const organizationRouter = express.Router();
 
@@ -100,12 +101,28 @@ organizationRouter.delete(
   AdminEventController.removePartnerById as any
 );
 
-organizationRouter.get("/user-tickets", getAllUsersWithTickets);
+organizationRouter.get(
+  "/user-tickets",
+  adminProtect,
+  getAllUsersWithTickets as any
+);
 
-organizationRouter.get("/user-tickets-stats", getAllUserStats);
-organizationRouter.get("/transaction-list", getAllTransaction);
+organizationRouter.get(
+  "/user-tickets-stats",
+  adminProtect,
+  getAllUserStats as any
+);
+organizationRouter.get(
+  "/transaction-list",
+  adminProtect,
+  getAllTransaction as any
+);
 
-organizationRouter.get("/transaction-stat", getTransactionStats);
+organizationRouter.get(
+  "/transaction-stat",
+  adminProtect,
+  getTransactionStats as any
+);
 
 organizationRouter.get(
   "/event/:eventId/password",

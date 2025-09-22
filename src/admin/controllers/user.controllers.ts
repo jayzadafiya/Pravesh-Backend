@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
 import mongoose from "mongoose";
+import { AuthRequest } from "../../interfaces/auth-request.interface";
 
-export const getAllUsersWithTickets = async (req: Request, res: Response) => {
+export const getAllUsersWithTickets = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
     const { eventIds, eventId, page = 1, active } = req.query;
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
-
     // Handle single eventId parameter
     if (eventId && typeof eventId === "string") {
       try {
@@ -36,6 +39,8 @@ export const getAllUsersWithTickets = async (req: Request, res: Response) => {
     const limitNumber = 10;
     const { usersWithStats, count } = await UserService.getAllUsersFromTickets(
       eventObjectId,
+      new mongoose.Types.ObjectId(req?.organization?._id),
+
       pageNumber,
       limitNumber,
       typeof active === "string" ? active : ""
@@ -59,7 +64,7 @@ export const getAllUsersWithTickets = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllUserStats = async (req: Request, res: Response) => {
+export const getAllUserStats = async (req: AuthRequest, res: Response) => {
   try {
     const { eventIds, eventId } = req.query;
 
@@ -88,7 +93,10 @@ export const getAllUserStats = async (req: Request, res: Response) => {
         .filter((id) => id !== null) as mongoose.Types.ObjectId[];
     }
 
-    const userStats = await UserService.getUserStats(eventObjectId);
+    const userStats = await UserService.getUserStats(
+      eventObjectId,
+      new mongoose.Types.ObjectId(req?.organization?._id)
+    );
     return res.status(200).json({
       success: true,
       data: userStats,
@@ -100,13 +108,12 @@ export const getAllUserStats = async (req: Request, res: Response) => {
     });
   }
 };
-export const getAllTransaction = async (req: Request, res: Response) => {
+export const getAllTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { eventIds, eventId, page = 1 } = req.query;
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
 
-    // Handle single eventId parameter
     if (eventId && typeof eventId === "string") {
       try {
         const singleEventId = new mongoose.Types.ObjectId(eventId);
@@ -114,9 +121,7 @@ export const getAllTransaction = async (req: Request, res: Response) => {
       } catch (err) {
         console.error("Invalid eventId format:", eventId);
       }
-    }
-    // Handle eventIds array if eventId is not provided
-    else if (Array.isArray(eventIds) && eventIds.length) {
+    } else if (Array.isArray(eventIds) && eventIds.length) {
       eventObjectId = eventIds
         .map((ele) => {
           try {
@@ -131,14 +136,14 @@ export const getAllTransaction = async (req: Request, res: Response) => {
 
     const pageNumber =
       typeof page === "string" ? parseInt(page, 10) : Number(page);
-    // Use a higher limit to ensure we get all transactions for the requested page
     const limitNumber = 10;
-    const fetchLimit = 11; // Fetch one extra to check if there's a next page
+    const fetchLimit = 11;
 
     const { transactions, count } = await UserService.getTransaction(
       eventObjectId,
+      new mongoose.Types.ObjectId(req?.organization?._id),
       pageNumber,
-      fetchLimit // Use fetchLimit instead of limitNumber
+      fetchLimit
     );
 
     console.log(
@@ -148,14 +153,13 @@ export const getAllTransaction = async (req: Request, res: Response) => {
     let isNextPageAvailable = false;
     if (transactions.length > limitNumber) {
       isNextPageAvailable = true;
-      // Remove the extra item we fetched to check for next page
       transactions.splice(limitNumber);
     }
 
     return res.status(200).json({
       success: true,
       data: transactions,
-      count: count, // Include the total count
+      count: count,
       pageCount: Math.ceil(count / limitNumber),
       isNextPageAvailable,
     });
@@ -169,14 +173,9 @@ export const getAllTransaction = async (req: Request, res: Response) => {
   }
 };
 
-export const getTransactionStats = async (req: Request, res: Response) => {
+export const getTransactionStats = async (req: AuthRequest, res: Response) => {
   try {
-    //totalRevenue
-    //success
-    //cancel
-    //pending
-
-    const { eventIds, eventId, organizationId } = req.query;
+    const { eventId } = req.query;
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
 
@@ -190,7 +189,8 @@ export const getTransactionStats = async (req: Request, res: Response) => {
     }
 
     const transactionStats = await UserService.getTransactionStats(
-      eventObjectId
+      eventObjectId,
+      new mongoose.Types.ObjectId(req?.organization?._id)
     );
     return res.status(200).json({
       success: true,

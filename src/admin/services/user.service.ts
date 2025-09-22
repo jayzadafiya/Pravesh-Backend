@@ -3,10 +3,12 @@ import UserTicket from "../../models/User-ticket.model";
 import User from "../../models/User.model";
 import TransactionModel from "../../models/Transaction.model";
 import UserTicketModel from "../../models/User-ticket.model";
+import EventModel from "../../models/Event.model";
 
 export class UserService {
   static async getAllUsersFromTickets(
     eventIds: mongoose.Types.ObjectId[] | [],
+    organizationId: mongoose.Types.ObjectId,
     page: number,
     limit: number,
     active: string
@@ -15,6 +17,14 @@ export class UserService {
       let query: FilterQuery<any> = {};
       if (eventIds.length > 0) {
         query = { event: { $in: eventIds } };
+      } else {
+        const getEventsId = await EventModel.find({
+          organization: organizationId,
+        })
+          .select("_id")
+          .lean();
+
+        query = { event: { $in: getEventsId.map((e) => e._id) } };
       }
       let userQuery = {};
       if (active === "true") {
@@ -75,10 +85,21 @@ export class UserService {
       throw new Error("Error fetching users from tickets");
     }
   }
-  static async getUserStats(eventIds: mongoose.Types.ObjectId[]) {
+  static async getUserStats(
+    eventIds: mongoose.Types.ObjectId[],
+    organizationId: mongoose.Types.ObjectId
+  ) {
     let query: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       query = { event: { $in: eventIds } };
+    } else {
+      const getEventsId = await EventModel.find({
+        organization: organizationId,
+      })
+        .select("_id")
+        .lean();
+
+      query = { event: { $in: getEventsId.map((e) => e._id) } };
     }
     const ticketStats = await UserTicket.aggregate([
       {
@@ -114,12 +135,21 @@ export class UserService {
 
   static async getTransaction(
     eventIds: mongoose.Types.ObjectId[],
+    organizationId: mongoose.Types.ObjectId,
     page: number,
     limit: number
   ) {
     let eventQuery: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       eventQuery = { event: { $in: eventIds } };
+    } else {
+      const getEventsId = await EventModel.find({
+        organization: organizationId,
+      })
+        .select("_id")
+        .lean();
+
+      eventQuery = { event: { $in: getEventsId.map((e) => e._id) } };
     }
 
     const uniqueTransactionIds = await UserTicketModel.aggregate([
@@ -219,10 +249,21 @@ export class UserService {
     return { transactions, count };
   }
 
-  static async getTransactionStats(eventIds: mongoose.Types.ObjectId[]) {
+  static async getTransactionStats(
+    eventIds: mongoose.Types.ObjectId[],
+    organizationId: mongoose.Types.ObjectId
+  ) {
     let query: FilterQuery<any> = {};
     if (eventIds.length > 0) {
       query = { event: { $in: eventIds } };
+    } else {
+      const getEventsId = await EventModel.find({
+        organization: organizationId,
+      })
+        .select("_id")
+        .lean();
+
+      query = { event: { $in: getEventsId.map((e) => e._id) } };
     }
     const stats = await TransactionModel.aggregate([
       {
