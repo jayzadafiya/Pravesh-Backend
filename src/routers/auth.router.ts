@@ -48,6 +48,7 @@ authRouter.post(
   "/send-setup-email",
   validateSendSetupEmail,
   validateRequest,
+  adminProtect,
   AdminAuthController.sendSetupEmail
 );
 
@@ -59,5 +60,11 @@ authRouter.post(
 );
 
 authRouter.get("/me", adminProtect, AdminAuthController.getMe);
+
+authRouter.get(
+  "/organizations",
+  adminProtect,
+  AdminAuthController.getAllOrganizations
+);
 
 export default authRouter;
