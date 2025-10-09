@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AdminEventService } from "../services/event.service";
 import mongoose from "mongoose";
 import { BadRequestException } from "../../utils/exceptions";
+import { AuthRequest } from "../../interfaces/auth-request.interface";
 
 class adminEventController {
   getEvent = async (req: Request, res: Response) => {
@@ -16,9 +17,11 @@ class adminEventController {
     }
   };
 
-  getEvents = async (req: Request, res: Response) => {
+  getEvents = async (req: AuthRequest, res: Response) => {
     try {
-      const events = await AdminEventService.getEventList();
+      const organization = req.organization;
+      console.log("Organization in getEvents:", organization);
+      const events = await AdminEventService.getEventList(organization?.id);
       res.status(200).json(events);
     } catch (error: any) {
       console.error("Error fetching events:", error);
@@ -80,20 +83,26 @@ class adminEventController {
     }
   };
 
-  getEventStats = async (req: Request, res: Response) => {
+  getEventStats = async (req: AuthRequest, res: Response) => {
     try {
-      const stats = await AdminEventService.getEventStats();
+      const org = req.organization;
+      const stats = await AdminEventService.getEventStats(org?.id);
       res.status(200).json(stats);
     } catch (error: any) {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
 
-  getAllEvents = async (req: Request, res: Response) => {
+  getAllEvents = async (req: AuthRequest, res: Response) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const result = await AdminEventService.getAllEventList(page, limit);
+      const org = req.organization;
+      const result = await AdminEventService.getAllEventList(
+        page,
+        limit,
+        org?.id
+      );
       res.status(200).json(result);
     } catch (error: any) {
       console.error("Error fetching events:", error);

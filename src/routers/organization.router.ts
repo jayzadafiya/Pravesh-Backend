@@ -26,9 +26,17 @@ organizationRouter.get(
 organizationRouter.get("/get-event/:slug", OrganizationController.getEvent);
 organizationRouter.get("/event/:id", AdminEventController.getEvent);
 
-organizationRouter.get("/get-event-list", AdminEventController.getEvents);
+organizationRouter.get(
+  "/get-event-list",
+  adminProtect,
+  AdminEventController.getEvents as any
+);
 
-organizationRouter.get("/get-all-events", AdminEventController.getAllEvents);
+organizationRouter.get(
+  "/get-all-events",
+  adminProtect,
+  AdminEventController.getAllEvents as any
+);
 organizationRouter.get(
   "/event-details/:eventId",
   OrganizationController.getEventTicketsDetails
@@ -39,7 +47,11 @@ organizationRouter.get(
   AdminEventController.getTicketsAndRevenueChartData
 );
 
-organizationRouter.get("/event-stats", AdminEventController.getEventStats);
+organizationRouter.get(
+  "/event-stats",
+  adminProtect,
+  AdminEventController.getEventStats as any
+);
 
 //TODO: Add admin role auth
 organizationRouter.post(
