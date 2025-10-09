@@ -142,6 +142,23 @@ class adminAuthController {
       res.status(error.statusCode || 500).send({ message: error.message });
     }
   };
+
+  getAllOrganizations = async (req: Request, res: Response) => {
+    try {
+      const organizations = await OrganizationModel.find({
+        role: "organization",
+      })
+        .select("name email active emailVerified createdAt updatedAt")
+        .sort({ createdAt: -1 });
+
+      res.status(200).json({
+        status: "success",
+        data: organizations,
+      });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).send({ message: error.message });
+    }
+  };
 }
 
 export const AdminAuthController = new adminAuthController();
