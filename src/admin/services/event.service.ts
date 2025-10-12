@@ -11,12 +11,19 @@ class adminEventService {
     return await getOne(EventModel, new mongoose.Types.ObjectId(id));
   };
 
-  getEventList = async () => {
-    const events = await getAll(EventModel);
+  getEventList = async (organizationId: mongoose.Types.ObjectId) => {
+    const events = await EventModel.find({ organization: organizationId });
     const now = moment();
 
-    // Aggregate ticket count and revenue per event
+    const eventIds = events.map((event) => event._id);
+
+    console.log(eventIds);
     const ticketStats = await UserTicket.aggregate([
+      {
+        $match: {
+          event: { $in: eventIds },
+        },
+      },
       {
         $group: {
           _id: "$event",
@@ -26,7 +33,6 @@ class adminEventService {
       },
     ]);
 
-    // Map eventId to stats for quick lookup
     const ticketStatsMap = ticketStats.reduce((acc, curr) => {
       acc[curr._id.toString()] = {
         totalTickets: curr.totalTickets,
@@ -35,7 +41,7 @@ class adminEventService {
       return acc;
     }, {} as Record<string, { totalTickets: number; totalRevenue: number }>);
 
-    const updatedEvents = events?.map((event) => {
+    const updatedEvents = events.map((event) => {
       let status = "pending";
 
       if (event.isPublished) {
@@ -54,7 +60,6 @@ class adminEventService {
         }
       }
 
-      // Add ticket and revenue stats
       const stats = ticketStatsMap[event._id.toString()] || {
         totalTickets: 0,
         totalRevenue: 0,
@@ -71,15 +76,19 @@ class adminEventService {
     return updatedEvents;
   };
 
-  getEventStats = async () => {
-    // Count total events
-    const totalEvents = await EventModel.countDocuments();
+  getEventStats = async (organizationId: mongoose.Types.ObjectId) => {
+    const totalEvents = await EventModel.countDocuments({
+      organization: organizationId,
+      isDeleted: false,
+    });
 
-    // Get all events (to use status logic)
-    const events = await EventModel.find({ isDeleted: false }).lean();
+    const events = await EventModel.find({
+      organization: organizationId,
+      isDeleted: false,
+    }).lean();
+
     const now = moment();
 
-    // Assign status to each event (same as in your updatedEvents)
     const eventsWithStatus = events.map((event) => {
       let status = "pending";
       if (event.isPublished) {
@@ -100,13 +109,27 @@ class adminEventService {
       return { ...event, status };
     });
 
-    // Count active events (status === "live")
     const activeEvents = eventsWithStatus.filter(
       (e) => e.status === "live"
     ).length;
 
-    // Aggregate total tickets sold and total revenue
+    if (events.length === 0) {
+      return {
+        totalEvents: 0,
+        activeEvents: 0,
+        totalTicketsSold: 0,
+        totalRevenue: 0,
+      };
+    }
+
+    const eventIds = events.map((event) => event._id);
+
     const ticketStats = await UserTicket.aggregate([
+      {
+        $match: {
+          event: { $in: eventIds },
+        },
+      },
       {
         $group: {
           _id: null,
@@ -133,8 +156,8 @@ class adminEventService {
       type === "artist"
         ? { $pull: { artists: { _id: profile } } }
         : type === "sponsor"
-          ? { $pull: { sponsors: { _id: profile } } }
-          : { $pull: { partners: { _id: profile } } };
+        ? { $pull: { sponsors: { _id: profile } } }
+        : { $pull: { partners: { _id: profile } } };
     const event = await EventModel.findOneAndUpdate({ _id: eventId }, update, {
       new: true,
     });
@@ -146,21 +169,39 @@ class adminEventService {
     return event;
   };
 
-  getAllEventList = async (page: number, limit: number) => {
+  getAllEventList = async (
+    page: number,
+    limit: number,
+    organizationId: mongoose.Types.ObjectId
+  ) => {
     const skip = (page - 1) * limit;
     const now = moment();
 
-    // Get paginated events
-    const events = await EventModel.find().skip(skip).limit(limit).lean();
+    const events = await EventModel.find({ organization: organizationId })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-    // Get total count for pagination
-    const total = await EventModel.countDocuments();
+    const total = await EventModel.countDocuments({
+      organization: organizationId,
+    });
 
-    // ...your ticketStats aggregation and status logic here...
+    if (!events.length) {
+      return {
+        events: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      };
+    }
 
-    // (Copy your status/ticketStats logic here as before)
-    // Map eventId to stats for quick lookup
+    const eventIds = events.map((event) => event._id);
+
     const ticketStats = await UserTicket.aggregate([
+      {
+        $match: { event: { $in: eventIds } },
+      },
       {
         $group: {
           _id: "$event",
@@ -169,6 +210,7 @@ class adminEventService {
         },
       },
     ]);
+
     const ticketStatsMap = ticketStats.reduce((acc, curr) => {
       acc[curr._id.toString()] = {
         totalTickets: curr.totalTickets,
@@ -177,8 +219,9 @@ class adminEventService {
       return acc;
     }, {} as Record<string, { totalTickets: number; totalRevenue: number }>);
 
-    const updatedEvents = events?.map((event) => {
+    const updatedEvents = events.map((event) => {
       let status = "pending";
+
       if (event.isPublished) {
         const startDate = moment(event.startDate);
         const endDate = moment(event.endDate);
@@ -194,10 +237,12 @@ class adminEventService {
           status = "closed";
         }
       }
+
       const stats = ticketStatsMap[event._id.toString()] || {
         totalTickets: 0,
         totalRevenue: 0,
       };
+
       return {
         ...event,
         status,
@@ -281,10 +326,10 @@ class adminEventService {
     };
   };
 
-  getTodayEvent = async ( organization: mongoose.Types.ObjectId) => {
-    const events = await EventModel.find({organization: organization });
+  getTodayEvent = async (organization: mongoose.Types.ObjectId) => {
+    const events = await EventModel.find({ organization: organization });
     return events;
-  }
+  };
 }
 
 export const AdminEventService = new adminEventService();

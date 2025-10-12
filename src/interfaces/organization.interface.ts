@@ -7,7 +7,7 @@ export interface IOrganization extends Document {
   logoUrl?: string;
   email: string;
   password?: string;
-  role: "organization" | "superadmin";
+  role: "organization" | "superAdmin";
   emailVerified: boolean;
   active: boolean;
   isDeleted: boolean;

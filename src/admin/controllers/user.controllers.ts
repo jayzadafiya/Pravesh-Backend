@@ -11,17 +11,14 @@ export const getAllUsersWithTickets = async (
     const { eventIds, eventId, page = 1, active } = req.query;
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
-    // Handle single eventId parameter
-    if (eventId && typeof eventId === "string") {
+    if (eventId && eventId !== "undefined" && typeof eventId === "string") {
       try {
         const singleEventId = new mongoose.Types.ObjectId(eventId);
         eventObjectId = [singleEventId];
       } catch (err) {
         console.error("Invalid eventId format:", eventId);
       }
-    }
-    // Handle eventIds array if eventId is not provided
-    else if (Array.isArray(eventIds) && eventIds.length) {
+    } else if (Array.isArray(eventIds) && eventIds.length) {
       eventObjectId = eventIds
         .map((ele) => {
           try {
@@ -34,13 +31,14 @@ export const getAllUsersWithTickets = async (
         .filter((id) => id !== null) as mongoose.Types.ObjectId[];
     }
 
+    let targetOrgId = new mongoose.Types.ObjectId(req?.organization?._id);
+
     const pageNumber =
       typeof page === "string" ? parseInt(page, 10) : Number(page);
     const limitNumber = 10;
     const { usersWithStats, count } = await UserService.getAllUsersFromTickets(
       eventObjectId,
-      new mongoose.Types.ObjectId(req?.organization?._id),
-
+      targetOrgId,
       pageNumber,
       limitNumber,
       typeof active === "string" ? active : ""
@@ -69,52 +67,7 @@ export const getAllUserStats = async (req: AuthRequest, res: Response) => {
     const { eventIds, eventId } = req.query;
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
-
-    // Handle single eventId parameter
-    if (eventId && typeof eventId === "string") {
-      try {
-        const singleEventId = new mongoose.Types.ObjectId(eventId);
-        eventObjectId = [singleEventId];
-      } catch (err) {
-        console.error("Invalid eventId format:", eventId);
-      }
-    }
-    // Handle eventIds array if eventId is not provided
-    else if (Array.isArray(eventIds) && eventIds.length) {
-      eventObjectId = eventIds
-        .map((ele) => {
-          try {
-            return new mongoose.Types.ObjectId(String(ele));
-          } catch (err) {
-            console.error("Invalid eventId in array:", ele);
-            return null;
-          }
-        })
-        .filter((id) => id !== null) as mongoose.Types.ObjectId[];
-    }
-
-    const userStats = await UserService.getUserStats(
-      eventObjectId,
-      new mongoose.Types.ObjectId(req?.organization?._id)
-    );
-    return res.status(200).json({
-      success: true,
-      data: userStats,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch users stats with tickets",
-    });
-  }
-};
-export const getAllTransaction = async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventIds, eventId, page = 1 } = req.query;
-
-    let eventObjectId: mongoose.Types.ObjectId[] = [];
-
-    if (eventId && typeof eventId === "string") {
+    if (eventId && eventId !== "undefined" && typeof eventId === "string") {
       try {
         const singleEventId = new mongoose.Types.ObjectId(eventId);
         eventObjectId = [singleEventId];
@@ -134,6 +87,49 @@ export const getAllTransaction = async (req: AuthRequest, res: Response) => {
         .filter((id) => id !== null) as mongoose.Types.ObjectId[];
     }
 
+    let targetOrgId = new mongoose.Types.ObjectId(req?.organization?._id);
+
+    const userStats = await UserService.getUserStats(
+      eventObjectId,
+      targetOrgId
+    );
+    return res.status(200).json({
+      success: true,
+      data: userStats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users stats with tickets",
+    });
+  }
+};
+export const getAllTransaction = async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventIds, eventId, page = 1 } = req.query;
+
+    let eventObjectId: mongoose.Types.ObjectId[] = [];
+
+    if (eventId && eventId !== "undefined" && typeof eventId === "string") {
+      try {
+        const singleEventId = new mongoose.Types.ObjectId(eventId);
+        eventObjectId = [singleEventId];
+      } catch (err) {
+        console.error("Invalid eventId format:", eventId);
+      }
+    } else if (Array.isArray(eventIds) && eventIds.length) {
+      eventObjectId = eventIds
+        .map((ele) => {
+          try {
+            return new mongoose.Types.ObjectId(String(ele));
+          } catch (err) {
+            console.error("Invalid eventId in array:", ele);
+            return null;
+          }
+        })
+        .filter((id) => id !== null) as mongoose.Types.ObjectId[];
+    }
+    let targetOrgId = new mongoose.Types.ObjectId(req?.organization?._id);
     const pageNumber =
       typeof page === "string" ? parseInt(page, 10) : Number(page);
     const limitNumber = 10;
@@ -141,7 +137,7 @@ export const getAllTransaction = async (req: AuthRequest, res: Response) => {
 
     const { transactions, count } = await UserService.getTransaction(
       eventObjectId,
-      new mongoose.Types.ObjectId(req?.organization?._id),
+      targetOrgId,
       pageNumber,
       fetchLimit
     );
@@ -179,7 +175,7 @@ export const getTransactionStats = async (req: AuthRequest, res: Response) => {
 
     let eventObjectId: mongoose.Types.ObjectId[] = [];
 
-    if (eventId && typeof eventId === "string") {
+    if (eventId && eventId !== "undefined" && typeof eventId === "string") {
       try {
         const singleEventId = new mongoose.Types.ObjectId(eventId);
         eventObjectId = [singleEventId];
@@ -188,9 +184,11 @@ export const getTransactionStats = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    let targetOrgId = new mongoose.Types.ObjectId(req?.organization?._id);
+
     const transactionStats = await UserService.getTransactionStats(
       eventObjectId,
-      new mongoose.Types.ObjectId(req?.organization?._id)
+      targetOrgId
     );
     return res.status(200).json({
       success: true,
