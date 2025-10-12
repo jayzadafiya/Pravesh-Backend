@@ -32,7 +32,7 @@ const OrganizationSchema: Schema = new Schema(
     },
     role: {
       type: String,
-      enum: ["organization", "superadmin"],
+      enum: ["organization", "superAdmin"],
       default: "organization",
     },
     emailVerified: {
@@ -82,7 +82,6 @@ OrganizationSchema.pre<IOrganization>("save", async function (next) {
   }
 });
 
-// Password comparison method
 OrganizationSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {

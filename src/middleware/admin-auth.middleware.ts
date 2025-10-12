@@ -6,6 +6,8 @@ import {
   UnauthorizedException,
 } from "../utils/exceptions";
 import { AdminAuthRequest } from "../interfaces/admin-auth-request.interface";
+import { decryptOrgId } from "../utils/encryption";
+import mongoose from "mongoose";
 
 const adminProtect = async (
   req: Request,
@@ -51,8 +53,35 @@ const adminProtect = async (
       throw new UnauthorizedException("Organization account is not active");
     }
 
-    res.locals.organization = organization;
-    (req as AdminAuthRequest).organization = organization;
+    const orgContextHeader = req.headers["x-organization-context"] as string;
+    let contextOrganization = organization;
+    console.log(
+      "Organization from token:",
+      organization.role,
+      orgContextHeader
+    );
+    if (orgContextHeader && organization.role === "superAdmin") {
+      try {
+        const decryptedOrgId = decryptOrgId(orgContextHeader);
+
+        const targetOrg = await OrganizationModel.findById(
+          new mongoose.Types.ObjectId(decryptedOrgId)
+        );
+        console.log("Organization from token:", targetOrg?.name);
+
+        if (targetOrg) {
+          contextOrganization = targetOrg;
+          console.log(
+            `Super admin viewing organization: ${targetOrg.name} (${targetOrg._id})`
+          );
+        }
+      } catch (error) {
+        console.warn("Failed to decrypt organization context:", error);
+      }
+    }
+
+    res.locals.organization = contextOrganization;
+    (req as AdminAuthRequest).organization = contextOrganization;
 
     next();
   } catch (error: any) {

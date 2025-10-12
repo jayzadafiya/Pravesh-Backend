@@ -141,6 +141,8 @@ export const securityConfig = {
       "Authorization",
       "Cache-Control",
       "X-Forwarded-For",
+      "x-organization-context",
+      "X-Organization-Context",
     ],
   },
 
@@ -245,7 +247,7 @@ export const createRateLimiter = (config: any) => {
         );
         res.header(
           "Access-Control-Allow-Headers",
-          "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+          "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-organization-context"
         );
       }
 
@@ -264,7 +266,6 @@ export const getTrustedProxies = () => {
   return true; // Trust all proxies in development
 };
 
-// Security headers middleware
 export const addSecurityHeaders = (req: any, res: any, next: any) => {
   // Remove server header
   res.removeHeader("Server");
